@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cora Network Analytica - D3 Explorer</title>
+    <!-- Import D3.js v7 -->
+    <script src="https://d3js.org/v7.min.js"></script>
+    <style>
+        body { font-family: 'Segoe UI', Arial, sans-serif; margin: 0; background: #121214; color: #e1e1e6; overflow: hidden; }
+        #sidebar { position: absolute; top: 15px; left: 15px; background: rgba(24, 24, 27, 0.9); padding: 20px; border-radius: 10px; border: 1px solid #27272a; max-width: 320px; z-index: 10; box-shadow: 0 4px 20px rgba(0,0,0,0.5); backdrop-filter: blur(4px); }
+        h2 { margin-top: 0; color: #4caf50; font-size: 20px; border-bottom: 1px solid #27272a; padding-bottom: 8px; }
+        .control-group { margin-bottom: 18px; }
+        label { display: block; font-size: 12px; color: #9a9a9e; margin-bottom: 5px; font-weight: 600; text-transform: uppercase; }
+        select, input[type="range"] { width: 100%; background: #1c1c1f; border: 1px solid #3f3f46; color: #fff; padding: 6px; border-radius: 4px; box-sizing: border-box; }
+        .legend-item { display: flex; align-items: center; margin: 6px 0; font-size: 13px; cursor: pointer; transition: opacity 0.2s; }
+        .legend-item:hover { opacity: 0.7; }
+        .legend-color { width: 14px; height: 14px; border-radius: 4px; margin-right: 10px; border: 1px solid rgba(255,255,255,0.1); }
+        svg { width: 100vw; height: 100vh; display: block; }
+        .node { stroke: #121214; stroke-width: 1.5px; cursor: pointer; transition: stroke-width 0.1s; }
+        .node:hover { stroke: #fff; stroke-width: 2.5px; }
+        .link { stroke-opacity: 0.25; stroke-width: 1px; transition: stroke-opacity 0.2s; }
+        .link.bridge { stroke-dasharray: 4; stroke-width: 1.5px; }
+        #tooltip { position: absolute; background: rgba(18, 18, 20, 0.95); padding: 12px; border-radius: 6px; font-size: 13px; display: none; pointer-events: none; border: 1px solid #3f3f46; box-shadow: 0 4px 12px rgba(0,0,0,0.5); line-height: 1.4; }
+    </style>
+</head>
+<body>
+
+    <div id="sidebar">
+        <h2>Cora Graph Explorer</h2>
+
+        <!-- Filtro Colore: Ground Truth vs Louvain -->
+        <div class="control-group">
+            <label for="color-mode">Color Nodes By (Structural Partitions)</label>
+            <select id="color-mode">
+                <option value="field">Academic Field (Ground Truth)</option>
+                <option value="community">Louvain Algorithm (Topology-Blind)</option>
+            </select>
+        </div>
+
+        <!-- Filtro Grado: Pulizia del Rumore -->
+        <div class="control-group">
+            <label id="degree-label" for="degree-slider">Min Citations (In-Degree): 0</label>
+            <input type="range" id="degree-slider" min="0" max="50" value="0">
+        </div>
+
+        <!-- Evidenziatore Teoria dei Legami Deboli -->
+        <div class="control-group">
+            <label for="bridge-mode">Highlight Granovetter Bridges</label>
+            <select id="bridge-mode">
+                <option value="all">Show All Citations (Default)</option>
+                <option value="bridges">Highlight Local Bridges (Overlap = 0)</option>
+            </select>
+        </div>
+
+        <label>Interactive Legend</label>
+        <div id="legend"></div>
+    </div>
+
+    <div id="tooltip"></div>
+    <svg></svg>
+
+    <!-- Collegamento al cervello Javascript esterno -->
+    <script src="app.js"></script>
+</body>
+</html>
