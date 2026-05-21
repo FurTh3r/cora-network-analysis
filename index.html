@@ -2,65 +2,359 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cora Network Analytica - D3 Explorer</title>
-    <!-- Import D3.js v7 -->
-    <script src="https://d3js.org/v7.min.js"></script>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <title>Cora Network Intelligence Hub</title>
     <style>
-        body { font-family: 'Segoe UI', Arial, sans-serif; margin: 0; background: #121214; color: #e1e1e6; overflow: hidden; }
-        #sidebar { position: absolute; top: 15px; left: 15px; background: rgba(24, 24, 27, 0.9); padding: 20px; border-radius: 10px; border: 1px solid #27272a; max-width: 320px; z-index: 10; box-shadow: 0 4px 20px rgba(0,0,0,0.5); backdrop-filter: blur(4px); }
-        h2 { margin-top: 0; color: #4caf50; font-size: 20px; border-bottom: 1px solid #27272a; padding-bottom: 8px; }
-        .control-group { margin-bottom: 18px; }
-        label { display: block; font-size: 12px; color: #9a9a9e; margin-bottom: 5px; font-weight: 600; text-transform: uppercase; }
-        select, input[type="range"] { width: 100%; background: #1c1c1f; border: 1px solid #3f3f46; color: #fff; padding: 6px; border-radius: 4px; box-sizing: border-box; }
-        .legend-item { display: flex; align-items: center; margin: 6px 0; font-size: 13px; cursor: pointer; transition: opacity 0.2s; }
-        .legend-item:hover { opacity: 0.7; }
-        .legend-color { width: 14px; height: 14px; border-radius: 4px; margin-right: 10px; border: 1px solid rgba(255,255,255,0.1); }
-        svg { width: 100vw; height: 100vh; display: block; }
-        .node { stroke: #121214; stroke-width: 1.5px; cursor: pointer; transition: stroke-width 0.1s; }
-        .node:hover { stroke: #fff; stroke-width: 2.5px; }
-        .link { stroke-opacity: 0.25; stroke-width: 1px; transition: stroke-opacity 0.2s; }
-        .link.bridge { stroke-dasharray: 4; stroke-width: 1.5px; }
-        #tooltip { position: absolute; background: rgba(18, 18, 20, 0.95); padding: 12px; border-radius: 6px; font-size: 13px; display: none; pointer-events: none; border: 1px solid #3f3f46; box-shadow: 0 4px 12px rgba(0,0,0,0.5); line-height: 1.4; }
+        /* === UI COLOR PALETTE (Academic Dark Mode) === */
+        :root {
+            --bg-dark: #1e1e2f;
+            --bg-panel: #27293d;
+            --text-main: #ffffff;
+            --text-muted: #8b8d9b;
+            --accent-blue: #00f2fe;
+            --accent-purple: #4facfe;
+            --accent-green: #00f2c9;
+            --border-color: #3b3d56;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            height: 100vh;
+            display: flex;
+            overflow: hidden;
+        }
+
+        /* === 1. SIDEBAR NAVIGATION === */
+        .sidebar {
+            width: 300px;
+            background-color: var(--bg-panel);
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            padding: 20px 0;
+            z-index: 10;
+        }
+
+        .sidebar-title {
+            padding: 0 20px 20px 20px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            border-bottom: 1px solid var(--border-color);
+            letter-spacing: 1.5px;
+            color: var(--accent-blue);
+        }
+
+        .menu-label {
+            padding: 25px 20px 10px 20px;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .menu-item {
+            padding: 14px 20px;
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+            border-left: 4px solid transparent;
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
+
+        .menu-item:hover {
+            background-color: rgba(255, 255, 255, 0.03);
+            color: var(--text-main);
+        }
+
+        .menu-item.active {
+            background: linear-gradient(90deg, rgba(79, 172, 254, 0.12) 0%, rgba(39, 41, 61, 0) 100%);
+            border-left: 4px solid var(--accent-blue);
+            color: var(--text-main);
+            font-weight: 600;
+        }
+
+        /* === 2. MAIN DISPLAY CONTENT VIEWPORT === */
+        .main-content {
+            flex-grow: 1;
+            position: relative;
+            background: radial-gradient(circle at center, #2a2c41 0%, #1e1e2f 100%);
+            display: flex;
+            flex-direction: column;
+            padding: 30px;
+        }
+
+        /* View Container Type A: Network Graph Engine Workspace */
+        #network-workspace {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .placeholder-text {
+            color: var(--text-muted);
+            font-size: 1.6rem;
+            letter-spacing: 2px;
+            opacity: 0.6;
+            font-weight: 300;
+            text-transform: uppercase;
+        }
+
+        /* View Container Type B: Dashboard Grid Layout for Analytics & Charts */
+        #analytics-workspace {
+            width: 100%;
+            height: 100%;
+            display: none;
+            grid-template-columns: repeat(2, 11fr);
+            grid-template-rows: repeat(2, 1fr);
+            gap: 25px;
+        }
+
+        .chart-card {
+            background-color: rgba(39, 41, 61, 0.4);
+            border-radius: 12px;
+            border: 1px dashed var(--border-color);
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            transition: border-color 0.3s;
+        }
+
+        .chart-card:hover {
+            border-color: var(--accent-purple);
+        }
+
+        .chart-header {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .chart-canvas-mock {
+            flex-grow: 1;
+            border-radius: 6px;
+            background-color: rgba(30, 30, 47, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            border: 1px solid rgba(255, 255, 255, 0.02);
+        }
+
+        /* === 3. MINIMIZABLE CONTEXT DETAILS PANEL === */
+        .floating-panel {
+            position: absolute;
+            top: 30px;
+            right: 30px;
+            width: 360px;
+            background: rgba(39, 41, 61, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6);
+            z-index: 20;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            overflow: hidden;
+        }
+
+        /* Panel Top Banner with Controls */
+        .panel-header {
+            padding: 18px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+            cursor: pointer;
+        }
+
+        .panel-header h3 {
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: var(--accent-blue);
+            letter-spacing: 0.5px;
+        }
+
+        .minimize-toggle {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            font-size: 1.2rem;
+            cursor: pointer;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+            transition: background 0.2s;
+        }
+
+        .minimize-toggle:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-main);
+        }
+
+        /* Collapsible Core Content Area */
+        .panel-body {
+            padding: 20px;
+            resize: vertical;
+            overflow: auto;
+            max-height: 70vh;
+            transition: max-height 0.3s ease-out;
+        }
+
+        /* Structural Data Key-Values styling */
+        .metric-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            font-size: 0.9rem;
+        }
+
+        .metric-label {
+            color: var(--text-muted);
+        }
+
+        .metric-value {
+            font-weight: 600;
+            color: var(--text-main);
+        }
+
+        /* Control widgets inputs inside Context Panel */
+        .widget-wrapper {
+            margin-top: 20px;
+        }
+
+        .widget-wrapper label {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            display: block;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+        }
+
+        .widget-wrapper select, .widget-wrapper input[type="range"] {
+            width: 100%;
+            padding: 10px;
+            background: #1e1e2f;
+            border: 1px solid var(--border-color);
+            color: white;
+            border-radius: 6px;
+            font-size: 0.9rem;
+        }
+
+        /* State Utility Class when hidden */
+        .panel-collapsed {
+            height: 58px;
+        }
     </style>
 </head>
 <body>
 
-    <div id="sidebar">
-        <h2>Cora Graph Explorer</h2>
+<aside class="sidebar">
+    <div class="sidebar-title">CORA ENGINE</div>
 
-        <!-- Filtro Colore: Ground Truth vs Louvain -->
-        <div class="control-group">
-            <label for="color-mode">Color Nodes By (Structural Partitions)</label>
-            <select id="color-mode">
-                <option value="field">Academic Field (Ground Truth)</option>
-                <option value="community">Louvain Algorithm (Topology-Blind)</option>
-            </select>
-        </div>
-
-        <!-- Filtro Grado: Pulizia del Rumore -->
-        <div class="control-group">
-            <label id="degree-label" for="degree-slider">Min Citations (In-Degree): 0</label>
-            <input type="range" id="degree-slider" min="0" max="50" value="0">
-        </div>
-
-        <!-- Evidenziatore Teoria dei Legami Deboli -->
-        <div class="control-group">
-            <label for="bridge-mode">Highlight Granovetter Bridges</label>
-            <select id="bridge-mode">
-                <option value="all">Show All Citations (Default)</option>
-                <option value="bridges">Highlight Local Bridges (Overlap = 0)</option>
-            </select>
-        </div>
-
-        <label>Interactive Legend</label>
-        <div id="legend"></div>
+    <div class="menu-label">Topological Canvas Vistas</div>
+    <div class="menu-item active" onclick="switchViewEngine('GRAPH', 'Louvain Structural Communities', this)">1. Louvain
+        Clusters
+    </div>
+    <div class="menu-item" onclick="switchViewEngine('GRAPH', 'HITS Authority & Hub Profiles', this)">2. HITS Centrality
+        Dualism
+    </div>
+    <div class="menu-item" onclick="switchViewEngine('GRAPH', 'Granovetterian Local Bridges', this)">3. Weak Ties
+        Mapping
+    </div>
+    <div class="menu-item" onclick="switchViewEngine('GRAPH', 'Stochastic SIR Epidemic Flow', this)">4. SIR Diffusion
+        Simulation
     </div>
 
-    <div id="tooltip"></div>
-    <svg></svg>
+    <div class="menu-label">Statistical Analytics</div>
+    <div class="menu-item" onclick="switchViewEngine('ANALYTICS', 'Empirical Degree Distributions', this)">5. Degree
+        Analysis
+    </div>
+    <div class="menu-item" onclick="switchViewEngine('ANALYTICS', 'Null Models Validation', this)">6. Random Graph
+        Benchmarks
+    </div>
+</aside>
 
-    <!-- Collegamento al cervello Javascript esterno -->
-    <script src="app.js"></script>
+<main class="main-content">
+
+    <div id="network-workspace">
+        <div class="placeholder-text" id="canvas-target-title">Louvain Structural Communities</div>
+    </div>
+
+    <div id="analytics-workspace">
+        <div class="chart-card">
+            <div class="chart-header" id="c1-title">In-Degree Distribution Histogram</div>
+            <div class="chart-canvas-mock">[ D3.js / Plotly Power-Law Curve Canvas ]</div>
+        </div>
+        <div class="chart-card">
+            <div class="chart-header" id="c2-title">Out-Degree Scale Profiler</div>
+            <div class="chart-canvas-mock">[ Structural Outbound References Scatterplot ]</div>
+        </div>
+        <div class="chart-card">
+            <div class="chart-header" id="c3-title">Quantile Threshold Filtering Bounds</div>
+            <div class="chart-canvas-mock">[ Cumulative Density Function Plot ]</div>
+        </div>
+        <div class="chart-card">
+            <div class="chart-header" id="c4-title">Erdos-Renyi Random Convergence</div>
+            <div class="chart-canvas-mock">[ Poisson vs Real Degree Variant Grid ]</div>
+        </div>
+    </div>
+
+    <div class="floating-panel" id="info-panel">
+        <div class="panel-header" onclick="togglePanelVisibility()">
+            <h3 id="panel-context-title">Global Network Metrics</h3>
+            <button class="minimize-toggle" id="toggle-icon">−</button>
+        </div>
+
+        <div class="panel-body" id="info-panel-body">
+            <div class="metric-row">
+                <span class="metric-label">Nodes (Total Sampled Papers):</span>
+                <span class="metric-value">2,708</span>
+            </div>
+            <div class="metric-row">
+                <span class="metric-label">Edges (Valid Citations):</span>
+                <span class="metric-value">5,429</span>
+            </div>
+            <div class="metric-row">
+                <span class="metric-label">Louvain Modularization (Q):</span>
+                <span class="metric-value">0.8147</span>
+            </div>
+
+            <div class="widget-wrapper">
+                <label>Active Discipline Slicing:</label>
+                <select>
+                    <option>All Isolated Domains</option>
+                    <option>Theory</option>
+                    <option>Genetic Algorithms</option>
+                    <option>Neural Networks</option>
+                </select>
+            </div>
+
+            <div class="widget-wrapper">
+                <label>Citation Cutoff Threshold:</label>
+                <input max="100" min="1" type="range" value="1">
+            </div>
+        </div>
+    </div>
+
+</main>
+
+<script src="network_engine.js"></script>
 </body>
 </html>
