@@ -91,13 +91,13 @@
             padding: 30px;
         }
 
-        /* View Container Type A: Network Graph Engine Workspace */
         #network-workspace {
             width: 100%;
             height: 100%;
             display: flex;
             align-items: center;
             justify-content: center;
+            position: relative;
         }
 
         .placeholder-text {
@@ -107,14 +107,15 @@
             opacity: 0.6;
             font-weight: 300;
             text-transform: uppercase;
+            z-index: 1;
         }
 
-        /* View Container Type B: Dashboard Grid Layout for Analytics & Charts */
+        /* View Container Type B: Dashboard Grid Layout for Analytics */
         #analytics-workspace {
             width: 100%;
             height: 100%;
             display: none;
-            grid-template-columns: repeat(2, 11fr);
+            grid-template-columns: repeat(2, 1fr);
             grid-template-rows: repeat(2, 1fr);
             gap: 25px;
         }
@@ -140,6 +141,15 @@
             margin-bottom: 15px;
             text-transform: uppercase;
             letter-spacing: 0.5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chart-subtitle {
+            font-size: 0.75rem;
+            color: var(--accent-blue);
+            text-transform: none;
         }
 
         .chart-canvas-mock {
@@ -147,14 +157,46 @@
             border-radius: 6px;
             background-color: rgba(30, 30, 47, 0.7);
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
             color: var(--text-muted);
             font-size: 0.85rem;
             border: 1px solid rgba(255, 255, 255, 0.02);
+            position: relative;
+            padding: 10px;
         }
 
-        /* === 3. MINIMIZABLE CONTEXT DETAILS PANEL === */
+        /* Specific styles for D3/Plotly targets inside cards */
+        .analytics-svg-container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .analytics-legend {
+            display: flex;
+            gap: 15px;
+            margin-top: 10px;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .legend-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 3px;
+        }
+
+        /* === 3. FLOATING DETAILS PANEL === */
         .floating-panel {
             position: absolute;
             top: 30px;
@@ -171,7 +213,6 @@
             overflow: hidden;
         }
 
-        /* Panel Top Banner with Controls */
         .panel-header {
             padding: 18px 20px;
             display: flex;
@@ -208,16 +249,12 @@
             color: var(--text-main);
         }
 
-        /* Collapsible Core Content Area */
         .panel-body {
             padding: 20px;
-            resize: vertical;
             overflow: auto;
             max-height: 70vh;
-            transition: max-height 0.3s ease-out;
         }
 
-        /* Structural Data Key-Values styling */
         .metric-row {
             display: flex;
             justify-content: space-between;
@@ -234,7 +271,6 @@
             color: var(--text-main);
         }
 
-        /* Control widgets inputs inside Context Panel */
         .widget-wrapper {
             margin-top: 20px;
         }
@@ -257,7 +293,6 @@
             font-size: 0.9rem;
         }
 
-        /* State Utility Class when hidden */
         .panel-collapsed {
             height: 58px;
         }
@@ -268,51 +303,79 @@
 <aside class="sidebar">
     <div class="sidebar-title">CORA ENGINE</div>
 
-    <div class="menu-label">Topological Canvas Vistas</div>
-    <div class="menu-item active" onclick="switchViewEngine('GRAPH', 'Louvain Structural Communities', this)">1. Louvain
-        Clusters
-    </div>
-    <div class="menu-item" onclick="switchViewEngine('GRAPH', 'HITS Authority & Hub Profiles', this)">2. HITS Centrality
-        Dualism
-    </div>
-    <div class="menu-item" onclick="switchViewEngine('GRAPH', 'Granovetterian Local Bridges', this)">3. Weak Ties
-        Mapping
-    </div>
-    <div class="menu-item" onclick="switchViewEngine('GRAPH', 'Stochastic SIR Epidemic Flow', this)">4. SIR Diffusion
-        Simulation
-    </div>
+    <div class="menu-label">Topological Canvas Views</div>
+    <div class="menu-item active" onclick="switchViewEngine('GRAPH', 'Main Visualization', this)">1. Normal Graph Visualization</div>
+    <div class="menu-item" onclick="switchViewEngine('GRAPH', 'Louvain Structural Communities', this)">2. Louvain Clusters</div>
+    <div class="menu-item" onclick="switchViewEngine('GRAPH', 'HITS Authority & Hub Profiles', this)">3. HITS Centrality Dualism</div>
+    <div class="menu-item" onclick="switchViewEngine('GRAPH', 'Weak & Strong Ties Analysis', this)">4. Weak Ties Mapping</div>
+    <div class="menu-item" onclick="switchViewEngine('GRAPH', 'Connected Components (SCC / WCC)', this)">5. Connected Components</div>
+    <div class="menu-item" onclick="switchViewEngine('GRAPH', 'SIR Epidemic Diffusion Simulation', this)">6. SIR Diffusion Simulation</div>
 
     <div class="menu-label">Statistical Analytics</div>
-    <div class="menu-item" onclick="switchViewEngine('ANALYTICS', 'Empirical Degree Distributions', this)">5. Degree
-        Analysis
-    </div>
-    <div class="menu-item" onclick="switchViewEngine('ANALYTICS', 'Null Models Validation', this)">6. Random Graph
-        Benchmarks
-    </div>
+    <div class="menu-item" onclick="switchViewEngine('ANALYTICS', 'Empirical Degree Distributions', this)">7. Degree Analysis</div>
+    <div class="menu-item" onclick="switchViewEngine('ANALYTICS', 'Null Models Validation', this)">8. Random Graph Benchmarks</div>
 </aside>
 
 <main class="main-content">
 
     <div id="network-workspace">
-        <div class="placeholder-text" id="canvas-target-title">Louvain Structural Communities</div>
+        <div class="placeholder-text" id="canvas-target-title">Awaiting Data Engine...</div>
     </div>
 
     <div id="analytics-workspace">
         <div class="chart-card">
-            <div class="chart-header" id="c1-title">In-Degree Distribution Histogram</div>
-            <div class="chart-canvas-mock">[ D3.js / Plotly Power-Law Curve Canvas ]</div>
+            <div class="chart-header" id="c1-title">
+                <span>In-Degree Distribution Histogram</span>
+                <span class="chart-subtitle" id="c1-subtitle">Scale-Free Check</span>
+            </div>
+            <div class="chart-canvas-mock">
+                <div id="degree-histogram-canvas" class="analytics-svg-container">[ D3.js Power-Law Curve Canvas ]</div>
+                <div class="analytics-legend">
+                    <div class="legend-item"><div class="legend-color" style="background: var(--accent-blue);"></div>In-Degree Counts</div>
+                    <div class="legend-item"><div class="legend-color" style="background: var(--accent-purple);"></div>Power Law Fit</div>
+                </div>
+            </div>
         </div>
+
         <div class="chart-card">
-            <div class="chart-header" id="c2-title">Out-Degree Scale Profiler</div>
-            <div class="chart-canvas-mock">[ Structural Outbound References Scatterplot ]</div>
+            <div class="chart-header" id="c2-title">
+                <span>Out-Degree Scale Profiler</span>
+                <span class="chart-subtitle" id="c2-subtitle">Outbound References</span>
+            </div>
+            <div class="chart-canvas-mock">
+                <div id="out-degree-scatter-canvas" class="analytics-svg-container">[ Outbound Citation Scatterplot ]</div>
+                <div class="analytics-legend">
+                    <div class="legend-item"><div class="legend-color" style="background: var(--accent-green);"></div>Nodes</div>
+                </div>
+            </div>
         </div>
+
         <div class="chart-card">
-            <div class="chart-header" id="c3-title">Quantile Threshold Filtering Bounds</div>
-            <div class="chart-canvas-mock">[ Cumulative Density Function Plot ]</div>
+            <div class="chart-header" id="c3-title">
+                <span>Quantile Threshold Filtering Bounds</span>
+                <span class="chart-subtitle" id="c3-subtitle">Cumulative Density Function</span>
+            </div>
+            <div class="chart-canvas-mock">
+                <div id="cdf-bounds-canvas" class="analytics-svg-container">[ D3.js CDF Line Plot ]</div>
+                <div class="analytics-legend">
+                    <div class="legend-item"><div class="legend-color" style="background: #ff5252;"></div>P(K ≥ k)</div>
+                    <div class="legend-item"><div class="legend-color" style="background: #e040fb;"></div>95% Quantile</div>
+                </div>
+            </div>
         </div>
+
         <div class="chart-card">
-            <div class="chart-header" id="c4-title">Erdos-Renyi Random Convergence</div>
-            <div class="chart-canvas-mock">[ Poisson vs Real Degree Variant Grid ]</div>
+            <div class="chart-header" id="c4-title">
+                <span>Erdos-Renyi Random Convergence</span>
+                <span class="chart-subtitle" id="c4-subtitle">Real vs Poisson Null Model</span>
+            </div>
+            <div class="chart-canvas-mock">
+                <div id="random-convergence-canvas" class="analytics-svg-container">[ Poisson vs Real Degree Variant Grid ]</div>
+                <div class="analytics-legend">
+                    <div class="legend-item"><div class="legend-color" style="background: #fff;"></div>Empirical Cora</div>
+                    <div class="legend-item"><div class="legend-color" style="background: rgba(0, 242, 254, 0.4); border: 1px dashed var(--accent-blue);"></div>G(n, p) Poisson</div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -321,40 +384,13 @@
             <h3 id="panel-context-title">Global Network Metrics</h3>
             <button class="minimize-toggle" id="toggle-icon">−</button>
         </div>
-
         <div class="panel-body" id="info-panel-body">
-            <div class="metric-row">
-                <span class="metric-label">Nodes (Total Sampled Papers):</span>
-                <span class="metric-value">2,708</span>
             </div>
-            <div class="metric-row">
-                <span class="metric-label">Edges (Valid Citations):</span>
-                <span class="metric-value">5,429</span>
-            </div>
-            <div class="metric-row">
-                <span class="metric-label">Louvain Modularization (Q):</span>
-                <span class="metric-value">0.8147</span>
-            </div>
-
-            <div class="widget-wrapper">
-                <label>Active Discipline Slicing:</label>
-                <select>
-                    <option>All Isolated Domains</option>
-                    <option>Theory</option>
-                    <option>Genetic Algorithms</option>
-                    <option>Neural Networks</option>
-                </select>
-            </div>
-
-            <div class="widget-wrapper">
-                <label>Citation Cutoff Threshold:</label>
-                <input max="100" min="1" type="range" value="1">
-            </div>
-        </div>
     </div>
 
 </main>
 
-<script src="network_engine.js"></script>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="network_engine.js"></script>
 </body>
 </html>
