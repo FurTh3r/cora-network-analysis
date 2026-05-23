@@ -81,14 +81,14 @@
             font-weight: 600;
         }
 
-        /* === 2. MAIN DISPLAY CONTENT VIEWPORT === */
+        /* === MAIN DISPLAY CONTENT VIEWPORT === */
         .main-content {
             flex-grow: 1;
             position: relative;
             background: radial-gradient(circle at center, #2a2c41 0%, #1e1e2f 100%);
             display: flex;
             flex-direction: column;
-            padding: 30px;
+            padding: 5px;
         }
 
         #network-workspace {
@@ -107,7 +107,9 @@
             opacity: 0.6;
             font-weight: 300;
             text-transform: uppercase;
-            z-index: 1;
+            z-index: 2;
+            pointer-events: none;
+            transition: opacity 0.2s ease, display 0.2s ease;
         }
 
         /* View Container Type B: Dashboard Grid Layout for Analytics */
@@ -196,7 +198,7 @@
             border-radius: 3px;
         }
 
-        /* === 3. FLOATING DETAILS PANEL === */
+        /* === FLOATING DETAILS PANEL === */
         .floating-panel {
             position: absolute;
             top: 30px;
@@ -384,13 +386,12 @@
             <h3 id="panel-context-title">Global Network Metrics</h3>
             <button class="minimize-toggle" id="toggle-icon">−</button>
         </div>
-        <div class="panel-body" id="info-panel-body">
-            </div>
+        <div class="panel-body" id="info-panel-body"></div>
     </div>
 
 </main>
 
     <script src="https://d3js.org/d3.v7.min.js"></script>
-    <script src="network_engine.js"></script>
+    <script type="module" src="js/main.js"></script>
 </body>
 </html>
