@@ -4,318 +4,41 @@
     <meta charset="UTF-8">
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
     <title>Cora Network Intelligence Hub</title>
-    <style>
-        /* === UI COLOR PALETTE (Academic Dark Mode) === */
-        :root {
-            --bg-dark: #1e1e2f;
-            --bg-panel: #27293d;
-            --text-main: #ffffff;
-            --text-muted: #8b8d9b;
-            --accent-blue: #00f2fe;
-            --accent-purple: #4facfe;
-            --accent-green: #00f2c9;
-            --border-color: #3b3d56;
-        }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-
-        body {
-            background-color: var(--bg-dark);
-            color: var(--text-main);
-            height: 100vh;
-            display: flex;
-            overflow: hidden;
-        }
-
-        /* === 1. SIDEBAR NAVIGATION === */
-        .sidebar {
-            width: 300px;
-            background-color: var(--bg-panel);
-            border-right: 1px solid var(--border-color);
-            display: flex;
-            flex-direction: column;
-            padding: 20px 0;
-            z-index: 10;
-        }
-
-        .sidebar-title {
-            padding: 0 20px 20px 20px;
-            font-size: 1.2rem;
-            font-weight: bold;
-            border-bottom: 1px solid var(--border-color);
-            letter-spacing: 1.5px;
-            color: var(--accent-blue);
-        }
-
-        .menu-label {
-            padding: 25px 20px 10px 20px;
-            font-size: 0.75rem;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .menu-item {
-            padding: 14px 20px;
-            cursor: pointer;
-            transition: all 0.2s ease-in-out;
-            border-left: 4px solid transparent;
-            color: var(--text-muted);
-            font-size: 0.95rem;
-        }
-
-        .menu-item:hover {
-            background-color: rgba(255, 255, 255, 0.03);
-            color: var(--text-main);
-        }
-
-        .menu-item.active {
-            background: linear-gradient(90deg, rgba(79, 172, 254, 0.12) 0%, rgba(39, 41, 61, 0) 100%);
-            border-left: 4px solid var(--accent-blue);
-            color: var(--text-main);
-            font-weight: 600;
-        }
-
-        /* === MAIN DISPLAY CONTENT VIEWPORT === */
-        .main-content {
-            flex-grow: 1;
-            position: relative;
-            background: radial-gradient(circle at center, #2a2c41 0%, #1e1e2f 100%);
-            display: flex;
-            flex-direction: column;
-            padding: 5px;
-        }
-
-        #network-workspace {
-            width: 100%;
-            height: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-        }
-
-        .placeholder-text {
-            color: var(--text-muted);
-            font-size: 1.6rem;
-            letter-spacing: 2px;
-            opacity: 0.6;
-            font-weight: 300;
-            text-transform: uppercase;
-            z-index: 2;
-            pointer-events: none;
-            transition: opacity 0.2s ease, display 0.2s ease;
-        }
-
-        /* View Container Type B: Dashboard Grid Layout for Analytics */
-        #analytics-workspace {
-            width: 100%;
-            height: 100%;
-            display: none;
-            grid-template-columns: repeat(2, 1fr);
-            grid-template-rows: repeat(2, 1fr);
-            gap: 25px;
-        }
-
-        .chart-card {
-            background-color: rgba(39, 41, 61, 0.4);
-            border-radius: 12px;
-            border: 1px dashed var(--border-color);
-            display: flex;
-            flex-direction: column;
-            padding: 20px;
-            transition: border-color 0.3s;
-        }
-
-        .chart-card:hover {
-            border-color: var(--accent-purple);
-        }
-
-        .chart-header {
-            font-size: 0.9rem;
-            font-weight: 600;
-            color: var(--text-muted);
-            margin-bottom: 15px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .chart-subtitle {
-            font-size: 0.75rem;
-            color: var(--accent-blue);
-            text-transform: none;
-        }
-
-        .chart-canvas-mock {
-            flex-grow: 1;
-            border-radius: 6px;
-            background-color: rgba(30, 30, 47, 0.7);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            color: var(--text-muted);
-            font-size: 0.85rem;
-            border: 1px solid rgba(255, 255, 255, 0.02);
-            position: relative;
-            padding: 10px;
-        }
-
-        /* Specific styles for D3/Plotly targets inside cards */
-        .analytics-svg-container {
-            width: 100%;
-            height: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .analytics-legend {
-            display: flex;
-            gap: 15px;
-            margin-top: 10px;
-            font-size: 0.75rem;
-            color: var(--text-muted);
-        }
-
-        .legend-item {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-        .legend-color {
-            width: 12px;
-            height: 12px;
-            border-radius: 3px;
-        }
-
-        /* === FLOATING DETAILS PANEL === */
-        .floating-panel {
-            position: absolute;
-            top: 30px;
-            right: 30px;
-            width: 360px;
-            background: rgba(39, 41, 61, 0.85);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6);
-            z-index: 20;
-            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-            overflow: hidden;
-        }
-
-        .panel-header {
-            padding: 18px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid var(--border-color);
-            cursor: pointer;
-        }
-
-        .panel-header h3 {
-            font-size: 1.05rem;
-            font-weight: 600;
-            color: var(--accent-blue);
-            letter-spacing: 0.5px;
-        }
-
-        .minimize-toggle {
-            background: transparent;
-            border: none;
-            color: var(--text-muted);
-            font-size: 1.2rem;
-            cursor: pointer;
-            width: 24px;
-            height: 24px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 4px;
-            transition: background 0.2s;
-        }
-
-        .minimize-toggle:hover {
-            background: rgba(255, 255, 255, 0.05);
-            color: var(--text-main);
-        }
-
-        .panel-body {
-            padding: 20px;
-            overflow: auto;
-            max-height: 70vh;
-        }
-
-        .metric-row {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 12px;
-            font-size: 0.9rem;
-        }
-
-        .metric-label {
-            color: var(--text-muted);
-        }
-
-        .metric-value {
-            font-weight: 600;
-            color: var(--text-main);
-        }
-
-        .widget-wrapper {
-            margin-top: 20px;
-        }
-
-        .widget-wrapper label {
-            font-size: 0.8rem;
-            color: var(--text-muted);
-            display: block;
-            margin-bottom: 6px;
-            text-transform: uppercase;
-        }
-
-        .widget-wrapper select, .widget-wrapper input[type="range"] {
-            width: 100%;
-            padding: 10px;
-            background: #1e1e2f;
-            border: 1px solid var(--border-color);
-            color: white;
-            border-radius: 6px;
-            font-size: 0.9rem;
-        }
-
-        .panel-collapsed {
-            height: 58px;
-        }
-    </style>
+    <link rel="stylesheet" href="js/style.css">
 </head>
 <body>
 
 <aside class="sidebar">
-    <div class="sidebar-title">CORA ENGINE</div>
+    <div class="sidebar-title">Cora Visualization</div>
 
     <div class="menu-label">Topological Canvas Views</div>
-    <div class="menu-item active" onclick="switchViewEngine('GRAPH', 'Main Visualization', this)">1. Normal Graph Visualization</div>
-    <div class="menu-item" onclick="switchViewEngine('GRAPH', 'Louvain Structural Communities', this)">2. Louvain Clusters</div>
-    <div class="menu-item" onclick="switchViewEngine('GRAPH', 'HITS Authority & Hub Profiles', this)">3. HITS Centrality Dualism</div>
-    <div class="menu-item" onclick="switchViewEngine('GRAPH', 'Weak & Strong Ties Analysis', this)">4. Weak Ties Mapping</div>
-    <div class="menu-item" onclick="switchViewEngine('GRAPH', 'Connected Components (SCC / WCC)', this)">5. Connected Components</div>
-    <div class="menu-item" onclick="switchViewEngine('GRAPH', 'SIR Epidemic Diffusion Simulation', this)">6. SIR Diffusion Simulation</div>
+    <div class="menu-item active" onclick="switchViewEngine('GRAPH', 'Main Visualization', this)">1. Normal Graph
+        Visualization
+    </div>
+    <div class="menu-item" onclick="switchViewEngine('GRAPH', 'Louvain Structural Communities', this)">2. Louvain
+        Clusters
+    </div>
+    <div class="menu-item" onclick="switchViewEngine('GRAPH', 'HITS Authority & Hub Profiles', this)">3. HITS Centrality
+        Dualism
+    </div>
+    <div class="menu-item" onclick="switchViewEngine('GRAPH', 'Weak & Strong Ties Analysis', this)">4. Weak Ties
+        Mapping
+    </div>
+    <div class="menu-item" onclick="switchViewEngine('GRAPH', 'Connected Components (SCC / WCC)', this)">5. Connected
+        Components
+    </div>
+    <div class="menu-item" onclick="switchViewEngine('GRAPH', 'SIR Epidemic Diffusion Simulation', this)">6. SIR
+        Diffusion Simulation
+    </div>
 
     <div class="menu-label">Statistical Analytics</div>
-    <div class="menu-item" onclick="switchViewEngine('ANALYTICS', 'Empirical Degree Distributions', this)">7. Degree Analysis</div>
-    <div class="menu-item" onclick="switchViewEngine('ANALYTICS', 'Null Models Validation', this)">8. Random Graph Benchmarks</div>
+    <div class="menu-item" onclick="switchViewEngine('ANALYTICS', 'Empirical Degree Distributions', this)">7. Degree
+        Analysis
+    </div>
+    <div class="menu-item" onclick="switchViewEngine('ANALYTICS', 'Null Models Validation', this)">8. Random Graph
+        Benchmarks
+    </div>
 </aside>
 
 <main class="main-content">
@@ -331,10 +54,16 @@
                 <span class="chart-subtitle" id="c1-subtitle">Scale-Free Check</span>
             </div>
             <div class="chart-canvas-mock">
-                <div id="degree-histogram-canvas" class="analytics-svg-container">[ D3.js Power-Law Curve Canvas ]</div>
+                <div class="analytics-svg-container" id="degree-histogram-canvas">[ D3.js Power-Law Curve Canvas ]</div>
                 <div class="analytics-legend">
-                    <div class="legend-item"><div class="legend-color" style="background: var(--accent-blue);"></div>In-Degree Counts</div>
-                    <div class="legend-item"><div class="legend-color" style="background: var(--accent-purple);"></div>Power Law Fit</div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: var(--accent-blue);"></div>
+                        In-Degree Counts
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: var(--accent-purple);"></div>
+                        Power Law Fit
+                    </div>
                 </div>
             </div>
         </div>
@@ -345,9 +74,13 @@
                 <span class="chart-subtitle" id="c2-subtitle">Outbound References</span>
             </div>
             <div class="chart-canvas-mock">
-                <div id="out-degree-scatter-canvas" class="analytics-svg-container">[ Outbound Citation Scatterplot ]</div>
+                <div class="analytics-svg-container" id="out-degree-scatter-canvas">[ Outbound Citation Scatterplot ]
+                </div>
                 <div class="analytics-legend">
-                    <div class="legend-item"><div class="legend-color" style="background: var(--accent-green);"></div>Nodes</div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: var(--accent-green);"></div>
+                        Nodes
+                    </div>
                 </div>
             </div>
         </div>
@@ -358,10 +91,16 @@
                 <span class="chart-subtitle" id="c3-subtitle">Cumulative Density Function</span>
             </div>
             <div class="chart-canvas-mock">
-                <div id="cdf-bounds-canvas" class="analytics-svg-container">[ D3.js CDF Line Plot ]</div>
+                <div class="analytics-svg-container" id="cdf-bounds-canvas">[ D3.js CDF Line Plot ]</div>
                 <div class="analytics-legend">
-                    <div class="legend-item"><div class="legend-color" style="background: #ff5252;"></div>P(K ≥ k)</div>
-                    <div class="legend-item"><div class="legend-color" style="background: #e040fb;"></div>95% Quantile</div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #ff5252;"></div>
+                        P(K ≥ k)
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #e040fb;"></div>
+                        95% Quantile
+                    </div>
                 </div>
             </div>
         </div>
@@ -372,10 +111,19 @@
                 <span class="chart-subtitle" id="c4-subtitle">Real vs Poisson Null Model</span>
             </div>
             <div class="chart-canvas-mock">
-                <div id="random-convergence-canvas" class="analytics-svg-container">[ Poisson vs Real Degree Variant Grid ]</div>
+                <div class="analytics-svg-container" id="random-convergence-canvas">[ Poisson vs Real Degree Variant
+                    Grid ]
+                </div>
                 <div class="analytics-legend">
-                    <div class="legend-item"><div class="legend-color" style="background: #fff;"></div>Empirical Cora</div>
-                    <div class="legend-item"><div class="legend-color" style="background: rgba(0, 242, 254, 0.4); border: 1px dashed var(--accent-blue);"></div>G(n, p) Poisson</div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #fff;"></div>
+                        Empirical Cora
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color"
+                             style="background: rgba(0, 242, 254, 0.4); border: 1px dashed var(--accent-blue);"></div>
+                        G(n, p) Poisson
+                    </div>
                 </div>
             </div>
         </div>
@@ -391,7 +139,7 @@
 
 </main>
 
-    <script src="https://d3js.org/d3.v7.min.js"></script>
-    <script type="module" src="js/main.js"></script>
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<script src="js/main.js" type="module"></script>
 </body>
 </html>

@@ -178,17 +178,28 @@ function updateSidebarMetrics(metrics) {
 
     // Injection general controls
     const interactionTogglesHTML = `
-        <div class="widget-wrapper" style="margin-bottom: 15px; border-bottom: 1px solid #23263d; padding-bottom: 12px;">
-            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; color: #e2e8f0; margin-bottom: 8px;">
-                <input type="checkbox" id="global-hover-toggle" ${appState.hoverInteractionEnabled ? 'checked' : ''} 
-                       onchange="setHoverInteraction(this.checked)" style="accent-color: #4facfe;">
-                Enable Hover Effects
+    <div class="widget-wrapper" style="margin-bottom: 18px; border-bottom: 1px solid #23263d; padding-bottom: 14px; display: flex; flex-direction: column; gap: 12px;">
+            
+            <label class="toggle-label" style="display: flex !important; flex-direction: row !important; align-items: center !important; justify-content: space-between !important; width: 100% !important; cursor: pointer; margin: 0; padding: 0;">
+                <span style="color: #e2e8f0; font-size: 0.9em; user-select: none;">Enable Hover Effects</span>
+                <div style="position: relative; width: 38px; height: 20px; min-width: 38px;">
+                    <input type="checkbox" class="toggle-input" id="global-hover-toggle" 
+                           ${appState.hoverInteractionEnabled ? 'checked' : ''} 
+                           onchange="setHoverInteraction(this.checked)">
+                    <span class="toggle-slider"></span>
+                </div>
             </label>
-            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; color: #e2e8f0;">
-                <input type="checkbox" id="global-drag-toggle" ${appState.dragInteractionEnabled ? 'checked' : ''} 
-                       onchange="setDragInteraction(this.checked)" style="accent-color: #4facfe;">
-                Enable Node Dragging
+            
+            <label class="toggle-label" style="display: flex !important; flex-direction: row !important; align-items: center !important; justify-content: space-between !important; width: 100% !important; cursor: pointer; margin: 0; padding: 0;">
+                <span style="color: #e2e8f0; font-size: 0.9em; user-select: none;">Enable Node Dragging</span>
+                <div style="position: relative; width: 38px; height: 20px; min-width: 38px;">
+                    <input type="checkbox" class="toggle-input" id="global-drag-toggle" 
+                           ${appState.dragInteractionEnabled ? 'checked' : ''} 
+                           onchange="setDragInteraction(this.checked)">
+                    <span class="toggle-slider"></span>
+                </div>
             </label>
+            
         </div>
     `;
 
@@ -197,23 +208,59 @@ function updateSidebarMetrics(metrics) {
     if (view === 'Main Visualization') {
         mainViewControlsHTML = `
             <div class="widget-wrapper" style="margin-bottom: 15px; border-bottom: 1px solid #23263d; padding-bottom: 12px;">
-                <label style="color: #e2e8f0; font-size: 0.9em; margin-bottom: 5px; display: block;">Layout Engine:</label>
-                <select id="layout-selector" onchange="changeMainLayout(this.value)" 
-                        style="width: 100%; padding: 6px; background: #151720; color: #fff; border: 1px solid #4facfe; border-radius: 4px; margin-bottom: 12px;">
-                    <option value="force" ${appState.mainViewLayoutMode === 'force' ? 'selected' : ''}>Force-Directed (Organic)</option>
-                    <option value="radial" ${appState.mainViewLayoutMode === 'radial' ? 'selected' : ''}>Radial (By In-Degree)</option>
-                    <option value="hierarchy" ${appState.mainViewLayoutMode === 'hierarchy' ? 'selected' : ''}>Hierarchy (Top-Down)</option>
-                </select>
+                <div style="margin-bottom: 15px; width: 100%;">
+                    <label style="color: #e2e8f0; font-size: 0.9em; margin-bottom: 5px; display: block;">
+                        Layout Engine
+                    </label>
+                    
+                    <select id="layout-selector" onchange="changeMainLayout(this.value)" 
+                            style="width: 100%; padding: 8px 12px; background: #11131c; color: #ffffff; border: 1px solid #2d3142; border-radius: 6px; font-size: 0.9em; cursor: pointer; outline: none; transition: all 0.3s ease; box-shadow: inset 0 1px 3px rgba(0,0,0,0.5);"
+                            onfocus="this.style.borderColor='#4facfe'; this.style.boxShadow='0 0 8px rgba(79, 172, 254, 0.3), inset 0 1px 3px rgba(0,0,0,0.5)';"
+                            onblur="this.style.borderColor='#2d3142'; this.style.boxShadow='inset 0 1px 3px rgba(0,0,0,0.5)';"
+                            onmouseover="this.style.borderColor='#4facfe';">
+                        
+                        <option value="force" ${appState.mainViewLayoutMode === 'force' ? 'selected' : ''} style="background: #11131c; color: #fff;">
+                            Force-Directed (Organic)
+                        </option>
+                        <option value="radial" ${appState.mainViewLayoutMode === 'radial' ? 'selected' : ''} style="background: #11131c; color: #fff;">
+                            Radial (By In-Degree)
+                        </option>
+                        <option value="hierarchy" ${appState.mainViewLayoutMode === 'hierarchy' ? 'selected' : ''} style="background: #11131c; color: #fff;">
+                            Hierarchy (Top-Down)
+                        </option>
+                        
+                    </select>
+                </div>
 
                 <label style="color: #e2e8f0; font-size: 0.9em; margin-bottom: 5px; display: block;">Search Node ID:</label>
-                <div style="display: flex; gap: 5px;">
-                    <input type="text" id="node-search-input" list="node-id-suggestions" placeholder="e.g. 11438" 
-                           style="width: 100%; padding: 6px; background: #151720; color: #fff; border: 1px solid #4facfe; border-radius: 4px;">
-                    <datalist id="node-id-suggestions">
-                        ${metrics.nodes.slice(0, 300).map(n => `<option value="${n.id}">`).join('')}
-                    </datalist>
-                    <button onclick="applySearch()" style="background: #4facfe; border: none; color: white; padding: 6px 10px; border-radius: 4px; cursor: pointer;" title="Search">🔍</button>
-                    <button onclick="clearSearch()" style="background: #ff3d71; border: none; color: white; padding: 6px 10px; border-radius: 4px; cursor: pointer;" title="Clear">✖</button>
+                <div style="display: flex; gap: 8px; align-items: center; width: 100%;">
+                    <div style="position: relative; flex-grow: 1;">
+                        <input type="text" id="node-search-input" list="node-id-suggestions" placeholder="e.g. 11438" 
+                               style="width: 100%; padding: 8px 12px; background: #11131c; color: #ffffff; border: 1px solid #2d3142; border-radius: 6px; font-size: 0.9em; transition: all 0.3s ease; outline: none; box-shadow: inset 0 1px 3px rgba(0,0,0,0.5);"
+                               onfocus="this.style.borderColor='#4facfe'; this.style.boxShadow='0 0 8px rgba(79, 172, 254, 0.3), inset 0 1px 3px rgba(0,0,0,0.5)';"
+                               onblur="this.style.borderColor='#2d3142'; this.style.boxShadow='inset 0 1px 3px rgba(0,0,0,0.5)';">
+                        <datalist id="node-id-suggestions">
+                            ${metrics.nodes.slice(0, 300).map(n => `<option value="${n.id}">`).join('')}
+                        </datalist>
+                    </div>
+                
+                    <button onclick="applySearch()" 
+                            style="background: #4facfe; border: none; color: white; padding: 8px 14px; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 0.9em; font-weight: bold; transition: all 0.2s ease; box-shadow: 0 2px 4px rgba(79, 172, 254, 0.2);" 
+                            title="Search"
+                            onmouseover="this.style.background='#00c6ff'; this.style.transform='scale(1.03)'; this.style.boxShadow='0 0 10px rgba(79, 172, 254, 0.5)';"
+                            onmouseout="this.style.background='#4facfe'; this.style.transform='scale(1)'; this.style.boxShadow='0 2px 4px rgba(79, 172, 254, 0.2)';"
+                            onmousedown="this.style.transform='scale(0.97)';">
+                        🔍
+                    </button>
+                
+                    <button onclick="clearSearch()" 
+                            style="background: #231c26; border: 1px solid #ff3d71; color: #ff3d71; padding: 8px 14px; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 0.9em; transition: all 0.2s ease;" 
+                            title="Clear"
+                            onmouseover="this.style.background='#ff3d71'; this.style.color='white'; this.style.transform='scale(1.03)'; this.style.boxShadow='0 0 10px rgba(255, 61, 113, 0.4)';"
+                            onmouseout="this.style.background='#231c26'; this.style.color='#ff3d71'; this.style.transform='scale(1)'; this.style.boxShadow='none';"
+                            onmousedown="this.style.transform='scale(0.97)';">
+                        ✖
+                    </button>
                 </div>
             </div>
         `;
@@ -221,10 +268,62 @@ function updateSidebarMetrics(metrics) {
 
     // Routing data to visualise
     if (view === 'Main Visualization') {
-        body.innerHTML = interactionTogglesHTML + mainViewControlsHTML + `
-            <div class="metric-row"><span class="metric-label">Total Nodes:</span><span class="metric-value">${metrics.node_count || 2708}</span></div>
-            <div class="metric-row"><span class="metric-label">Total Edges:</span><span class="metric-value">${metrics.edge_count || 5429}</span></div>
-            <div class="metric-row"><span class="metric-label">Avg Path Length:</span><span class="metric-value">${metrics.APL ? metrics.APL.toFixed(4) : '6.31'}</span></div>
+        const gradientLegendHTML = `
+            <div class="gradient-legend-container" style="margin: 15px 0 20px 0; font-family: sans-serif;">
+                <div class="metric-label" style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; color: #8b8d9b; font-weight: bold;">
+                    Top 10 Papers Hierarchy
+                </div>
+                <div class="gradient-bar" style="
+                    height: 14px; 
+                    width: 100%; 
+                    background: linear-gradient(to right, #ff4da6, #e653b6, #cc5ac6, #b360d6, #9967e6, #806df0, #737ef7, #668eff, #599eff, #4facfe); 
+                    border-radius: 4px;
+                    box-shadow: inset 0 1px 3px rgba(0,0,0,0.2);
+                "></div>
+                <div class="gradient-labels" style="
+                    display: flex; 
+                    justify-content: space-between; 
+                    margin-top: 6px; 
+                    font-size: 11px; 
+                    font-weight: 600;
+                ">
+                    <span style="color: #ff4da6;">Rank #1 (Max Hub)</span>
+                    <span style="color: #4facfe;">Rank #10 (Min Hub)</span>
+                </div>
+            </div>
+            <hr style="border: 0; border-top: 1px solid #23263d; margin: 15px 0;">
+        `;
+
+        body.innerHTML = interactionTogglesHTML + mainViewControlsHTML + gradientLegendHTML + `
+            <div class="metric-row" title="The total number of unique papers (vertices) within the network dataset.">
+                <span class="metric-label">Total Nodes:</span>
+                <span class="metric-value">${metrics.node_count || 2708}</span>
+            </div>
+            
+            <div class="metric-row" title="The total number of citation links (directed edges) connecting the papers.">
+                <span class="metric-label">Total Edges:</span>
+                <span class="metric-value">${metrics.edge_count || 5429}</span>
+            </div>
+            
+            <div class="metric-row" title="The average number of steps along the shortest paths for all possible pairs of network nodes.">
+                <span class="metric-label">Avg Path Length:</span>
+                <span class="metric-value">${metrics.apl ? metrics.apl.toFixed(4) : '0'}</span>
+            </div>
+            
+            <div class="metric-row" title="The ratio of actual edges to the total number of possible edges, measuring how interconnected the network is.">
+                <span class="metric-label">Network Density:</span>
+                <span class="metric-value">${metrics.density ? metrics.density.toFixed(5) : '0'}</span>
+            </div>
+            
+            <div class="metric-row" title="The average number of total connections (both incoming citations and outgoing references) per paper.">
+                <span class="metric-label">Average Degree:</span>
+                <span class="metric-value">${metrics.avg_degree ? metrics.avg_degree.toFixed(2) : '0'}</span>
+            </div>
+            
+            <div class="metric-row" title="A measure of the degree to which nodes in a graph tend to cluster together, forming tight citation triangles.">
+                <span class="metric-label">Avg Clustering Coeff.:</span>
+                <span class="metric-value">${metrics.acc ? metrics.acc.toFixed(4) : '0'}</span>
+            </div>
         `;
     } else if (view === 'Louvain Structural Communities') {
         const uniqueClusters = new Set(metrics.nodes.map(n => n.cluster)).size;
@@ -252,20 +351,98 @@ function updateSidebarMetrics(metrics) {
             </div>
         `;
     } else if (view === 'Connected Components (SCC / WCC)') {
+        const giantCoreSize = metrics.scc_giant_size || 0;
+        const mainBodySize = metrics.wcc_giant_size || 0;
+
         body.innerHTML = interactionTogglesHTML + `
-            <div class="metric-row"><span class="metric-label">Strong Components (SCC):</span><span class="metric-value">${metrics.scc || 'N/A'}</span></div>
-            <div class="metric-row"><span class="metric-label">Weak Components (WCC):</span><span class="metric-value">${metrics.wcc || 'N/A'}</span></div>
-            <div style="margin-top: 15px; font-size: 0.85em;">
-                <div style="color: #00ff87; margin-bottom: 5px;">■ SCC Core Nodes (Mutual Reachability)</div>
-                <div style="color: #ff3d71;">■ WCC Peripheral Nodes (Weak Reachability)</div>
+            <div class="metric-row" style="margin-bottom: 8px;">
+                <span class="metric-label">Strong Components (SCC):</span>
+                <span class="metric-value">
+                    ${metrics.scc || 'N/A'} 
+                    <span style="color: #00ff87; font-size: 0.85em; font-weight: normal; margin-left: 5px;">
+                        (Giant Core: ${giantCoreSize} nodes)
+                    </span>
+                </span>
+            </div>
+            
+            <div class="metric-row" style="margin-bottom: 12px;">
+                <span class="metric-label">Weak Components (WCC):</span>
+                <span class="metric-value">
+                    ${metrics.wcc || 'N/A'} 
+                    <span style="color: #4facfe; font-size: 0.85em; font-weight: normal; margin-left: 5px;">
+                        (Main Body: ~${mainBodySize} nodes)
+                    </span>
+                </span>
+            </div>
+            
+            <div style="margin-top: 15px; font-size: 0.85em; border-top: 1px solid var(--border-color); padding-top: 12px;">
+                <div style="color: #00ff87; margin-bottom: 4px; display: flex; align-items: center; gap: 6px; font-weight: 600;">
+                    <span>■</span> SCC Giant Core (Mutual Reachability)
+                </div>
+                <div style="color: #888; font-size: 0.85em; margin-left: 14px; margin-bottom: 10px; font-style: italic;">
+                    *Nota: Le restanti SCC sono i singoli nodi azzurri/rossi senza cicli di ritorno.
+                </div>
+                
+                <div style="color: #4facfe; margin-bottom: 10px; display: flex; align-items: center; gap: 6px; font-weight: 600;">
+                    <span>■</span> WCC Main Network (Giant Component)
+                </div>
+                
+                <div style="color: #ff3d71; display: flex; align-items: center; gap: 6px; font-weight: 600;">
+                    <span>■</span> Isolated WCC (Disconnected Clusters)
+                </div>
             </div>
         `;
     } else if (view.includes('SIR')) {
         body.innerHTML = interactionTogglesHTML + `
             <div class="metric-row"><span class="metric-label">Current Step (t):</span><span class="metric-value" id="sir-time-display">${appState.currentSirTime}</span></div>
             <div class="widget-wrapper" style="margin-top: 20px;">
-                <label>Timeline Evolution:</label>
-                <input type="range" min="0" max="${appState.maxSirTime}" value="${appState.currentSirTime}" id="sir-slider" style="width: 100%;">
+                <label style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: #8b8d9b; font-weight: bold; display: block; margin-bottom: 10px;">Timeline Evolution</label>
+                
+                <input type="range" min="0" max="${appState.maxSirTime}" value="${appState.currentSirTime}" id="sir-slider" style="
+                    -webkit-appearance: none;
+                    appearance: none;
+                    width: 100%;
+                    height: 6px;
+                    background: #23263d;
+                    border-radius: 8px;
+                    outline: none;
+                    cursor: pointer;
+                    transition: background 0.3s ease;
+                    box-shadow: inset 0 1px 3px rgba(0,0,0,0.5);
+                    margin: 10px 0;
+                ">
+                
+                <style>
+                    #sir-slider::-webkit-slider-thumb {
+                        -webkit-appearance: none;
+                        appearance: none;
+                        width: 16px;
+                        height: 16px;
+                        border-radius: 50%;
+                        background: #ff3d71;
+                        cursor: pointer;
+                        border: 2px solid #ffffff;
+                        box-shadow: 0 0 8px rgba(255, 61, 113, 0.5);
+                        transition: transform 0.1s ease, background-color 0.2s ease;
+                    }
+                    #sir-slider::-webkit-slider-thumb:hover {
+                        transform: scale(1.2);
+                        background: #ff5c8a;
+                    }
+                    #sir-slider::-moz-range-thumb {
+                        width: 12px;
+                        height: 12px;
+                        border-radius: 50%;
+                        background: #ff3d71;
+                        cursor: pointer;
+                        border: 2px solid #ffffff;
+                        box-shadow: 0 0 8px rgba(255, 61, 113, 0.5);
+                        transition: transform 0.1s ease;
+                    }
+                    #sir-slider::-moz-range-thumb:hover {
+                        transform: scale(1.2);
+                    }
+                </style>
             </div>
             <div style="margin-top: 15px; font-size: 0.85em;">
                 <div style="color: #4facfe; margin-bottom: 5px;">■ Susceptible (S): <span class="metric-value" id="sir-S-display">${appState.currentSirS}</span></div>

@@ -42,12 +42,12 @@ export function initializeCanvasD3Graph(nodes, links) {
         .scaleExtent([0.02, 8])
         .filter(event => {
             if (event.type === 'mousedown') {
-                if (event.button === 1) return true; // Tasto centrale fa sempre Pan
+                if (event.button === 1) return true;
                 if (event.button === 0) {
                     const cx = transformState.current.invertX(event.offsetX);
                     const cy = transformState.current.invertY(event.offsetY);
                     const nodeHit = DOM.simulation.find(cx, cy, 30);
-                    return !nodeHit; // Fa pan solo se non clicchi su un nodo
+                    return !nodeHit;
                 }
                 return false;
             }
@@ -110,11 +110,10 @@ export function initializeCanvasD3Graph(nodes, links) {
         DOM.tooltip.style.opacity = '0';
         renderScene(nodes, links);
     });
-
+    
     d3.select(DOM.canvas)
         .call(zoomBehavior)
-        .call(dragBehavior)
-        .call(zoomBehavior.transform, d3.zoomIdentity);
+        .call(dragBehavior);
 
     DOM.simulation.on("tick", () => renderScene(nodes, links));
 }
@@ -148,7 +147,9 @@ function updateTooltipContent(node) {
         } else if (view === 'Weak & Strong Ties Analysis') {
             DOM.tooltip.innerHTML = `ID: ${node.id}<br>Cross-Field Node: ${node.in_deg > 5 ? 'Global Interconnector' : 'Local Clusterer'}`;
         } else if (view === 'Connected Components (SCC / WCC)') {
-            const componentType = node.in_deg > 1 ? "SCC Core Engine" : "WCC Periphery Leaf";
+            const componentType = node.is_scc_core
+                ? "SCC Core Engine"
+                : (node.is_wcc_main ? "Main Connected Network" : "Isolated Component");
             DOM.tooltip.innerHTML = `ID: ${node.id}<br>Component Classification: ${componentType}`;
         }
         DOM.tooltip.style.opacity = '1';
@@ -191,22 +192,22 @@ function drawCommunityHulls(nodes) {
         // Drawing the cluster hull
         if (hull) {
             DOM.ctx.save();
-            let alpha = 0.05;
-            if (appState.hoveredNode && appState.hoveredNode.cluster === clusterId) alpha = 0.25;
+            let alpha = 0.06;
+            if (appState.hoveredNode && appState.hoveredNode.cluster === clusterId) alpha = 0.30;
 
             const color = clusterColors[clusterId % clusterColors.length];
             DOM.ctx.fillStyle = color;
-            DOM.ctx.strokeStyle = color;
             DOM.ctx.globalAlpha = alpha;
-            DOM.ctx.lineWidth = 45;
-            DOM.ctx.lineJoin = "round";
+
+            DOM.ctx.shadowColor = color;
+            DOM.ctx.shadowBlur = 30;
 
             DOM.ctx.beginPath();
             DOM.ctx.moveTo(hull[0][0], hull[0][1]);
             for (let i = 1; i < hull.length; i++) DOM.ctx.lineTo(hull[i][0], hull[i][1]);
             DOM.ctx.closePath();
+
             DOM.ctx.fill();
-            DOM.ctx.stroke();
             DOM.ctx.restore();
         }
     });
@@ -237,39 +238,45 @@ function drawNetwork(nodes, links) {
 
         if (!src || !tgt || src.x === undefined || tgt.x === undefined) continue;
 
-        let linkOpacity = 0.12;
         let strokeStyle = "rgba(90, 93, 120, ";
+        let isSpecialLink = false;
 
         if (appState.activeView === 'Weak & Strong Ties Analysis') {
             if (link.is_local_bridge || link.is_cross_field) {
                 strokeStyle = "rgba(255, 170, 0, ";
-                linkOpacity = 0.22;
+                isSpecialLink = true;
             } else {
                 strokeStyle = "rgba(79, 172, 254, ";
-                linkOpacity = 0.08;
             }
         }
 
-        if (searchedNode && appState.activeView === 'Main Visualization') {
-            linkOpacity = (src.id === searchedNode.id || tgt.id === searchedNode.id) ? 0.85 : 0.02;
-        } else if (appState.hoveredNode) {
-            if (appState.activeView === 'Main Visualization' || appState.activeView.includes('SIR') ||
-                appState.activeView === 'HITS Authority & Hub Profiles') {
-                linkOpacity = (src.id === appState.hoveredNode.id || tgt.id === appState.hoveredNode.id) ? 0.85 : 0.01;
-            } else if (appState.activeView === 'Louvain Structural Communities') {
-                linkOpacity = (src.cluster === appState.hoveredNode.cluster &&
-                    tgt.cluster === appState.hoveredNode.cluster) ? 0.70 : 0.01;
-            } else if (appState.activeView === 'Weak & Strong Ties Analysis') {
-                linkOpacity = (src.id === appState.hoveredNode.id || tgt.id === appState.hoveredNode.id) ? 0.90 : 0.01;
-            } else if (appState.activeView === 'Connected Components (SCC / WCC)') {
-                linkOpacity = (src.id === appState.hoveredNode.id || tgt.id === appState.hoveredNode.id) ? 0.70 : 0.01;
+        let linkOpacity = isSpecialLink ? 0.40 : 0.20;
+        if (appState.activeView === 'Weak & Strong Ties Analysis' && !isSpecialLink) {
+            linkOpacity = 0.15;
+        }
+
+        const isConnectedToHover = appState.hoveredNode && (src.id === appState.hoveredNode.id || tgt.id === appState.hoveredNode.id);
+        const isConnectedToSearch = searchedNode && (src.id === searchedNode.id || tgt.id === searchedNode.id);
+
+        if (searchedNode || appState.hoveredNode) {
+            linkOpacity = isSpecialLink ? 0.15 : 0.05;
+
+            if (appState.activeView === 'Louvain Structural Communities' && appState.hoveredNode) {
+                if (src.cluster === appState.hoveredNode.cluster && tgt.cluster === appState.hoveredNode.cluster) {
+                    linkOpacity = 0.75;
+                } else {
+                    linkOpacity = 0.02;
+                }
+            } else {
+                if (isConnectedToHover || isConnectedToSearch) {
+                    linkOpacity = isSpecialLink ? 0.95 : 0.85;
+                }
             }
         }
 
         DOM.ctx.strokeStyle = strokeStyle + linkOpacity + ")";
-        DOM.ctx.lineWidth = (appState.hoveredNode && (src.id === appState.hoveredNode.id ||
-            tgt.id === appState.hoveredNode.id)) || (searchedNode && (src.id === searchedNode.id ||
-            tgt.id === searchedNode.id)) ? 1.2 : 0.6;
+
+        DOM.ctx.lineWidth = (isConnectedToHover || isConnectedToSearch) ? 1.5 : 0.6;
 
         DOM.ctx.beginPath();
         DOM.ctx.moveTo(src.x, src.y);
@@ -286,7 +293,24 @@ function drawNetwork(nodes, links) {
         let fill = "#8b8d9b";
 
         if (appState.activeView === 'Main Visualization') {
-            fill = node.top10 ? "#00f2fe" : "#4facfe";
+            if (node.top10) {
+                const rank = node.top_rank !== undefined ? node.top_rank : 0;
+                const topPalette = [
+                    "#ff4da6", // #1 Rank
+                    "#e653b6", // #2 Rank
+                    "#cc5ac6", // #3 Rank
+                    "#b360d6", // #4 Rank
+                    "#9967e6", // #5 Rank
+                    "#806df0", // #6 Rank
+                    "#737ef7", // #7 Rank
+                    "#668eff", // #8 Rank
+                    "#599eff", // #9 Rank
+                    "#4facfe"  // #10 Rank
+                ];
+                fill = topPalette[rank] || "#1a0042";
+            } else {
+                fill = "#4facfe";
+            }
             if (searchedNode && node.id === searchedNode.id) fill = "#ff3d71";
         } else if (appState.activeView === 'Louvain Structural Communities') {
             fill = clusterColors[node.cluster % clusterColors.length];
@@ -300,7 +324,9 @@ function drawNetwork(nodes, links) {
         } else if (appState.activeView === 'Weak & Strong Ties Analysis') {
             fill = node.is_local_bridge || node.in_deg > 12 ? "#ffaa00" : "#4facfe";
         } else if (appState.activeView === 'Connected Components (SCC / WCC)') {
-            fill = node.in_deg > 1 ? "#00ff87" : "#ff3d71";
+            fill = node.is_scc_core
+                ? "#00ff87"
+                : (node.is_wcc_main ? "#4facfe" : "#ff3d71");
         } else if (appState.activeView.includes('SIR')) {
             let state = 'S';
             if (node.sir_history && node.sir_history[appState.currentSirTime]) state = node
@@ -334,6 +360,7 @@ function drawNetwork(nodes, links) {
 
         if (DOM.ctx.globalAlpha === 1.0 && (node.top10 || (searchedNode && node.id === searchedNode.id) ||
             (appState.activeView === 'HITS Authority & Hub Profiles' && (node.auth || 0) > 0.01))) {
+
             DOM.ctx.strokeStyle = "#ffffff";
             DOM.ctx.lineWidth = 1.8;
             DOM.ctx.stroke();
@@ -368,7 +395,17 @@ export function updateGraphLayout(viewName) {
     }
 
     DOM.simulation.stop();
-    DOM.simulation.force("x", null).force("y", null).force("center", null).force("r", null);
+    DOM.simulation.stop();
+    DOM.simulation
+        .force("x", null)
+        .force("y", null)
+        .force("center", null)
+        .force("r", null)
+        .force("radial", null)
+        .force("xCluster", null)
+        .force("yCluster", null)
+        .force("collide", null)
+        .force("link", null);
 
     appState.globalNetworkData.nodes.forEach(node => {
         node.vx = 0;
@@ -389,7 +426,7 @@ export function updateGraphLayout(viewName) {
             DOM.simulation
                 .force("charge", d3.forceManyBody().strength(-30).distanceMax(300))
                 .force("link", d3.forceLink(appState.globalNetworkData.links).id(d => d.id).distance(30).strength(0.1))
-                .force("r", d3.forceRadial(d => (d.in_deg > 10 ? 50 : 250), width / 2, height / 2).strength(0.8));
+                .force("radial", d3.forceRadial(d => (d.in_deg > 10 ? 50 : 250), width / 2, height / 2).strength(0.8));
         } else if (appState.mainViewLayoutMode === 'hierarchy') {
             const maxDeg = d3.max(appState.globalNetworkData.nodes, d => d.in_deg || 0) || 1;
             DOM.simulation
@@ -401,33 +438,102 @@ export function updateGraphLayout(viewName) {
                     return height * 0.9 - (normDeg * height * 0.8);
                 }).strength(0.8));
         }
+
     } else if (viewName === 'Louvain Structural Communities') {
-        const uniqueClusters = [...new Set(appState.globalNetworkData.nodes.map(n => n.cluster))];
+        const nodes = appState.globalNetworkData.nodes;
+        const links = appState.globalNetworkData.links;
+        const uniqueClusters = [...new Set(nodes.map(n => n.cluster))];
         const numClusters = uniqueClusters.length || 1;
-        const radMult = Math.min(width, height) * 0.38;
+        new Map(
+            uniqueClusters.map((c, i) => [c, i])
+        );
+        const goldenAngle = Math.PI * (3 - Math.sqrt(5));
+        const clusterCenters = {};
+
+        uniqueClusters.forEach((cluster, i) => {
+            const radius = 70 * Math.sqrt(i);
+            const theta = i * goldenAngle;
+
+            clusterCenters[cluster] = {
+                x: width / 2 + radius * Math.cos(theta),
+                y: height / 2 + radius * Math.sin(theta)
+            };
+        });
 
         DOM.simulation
-            .force("charge", d3.forceManyBody().strength(-35).distanceMax(200))
-            .force("link", d3.forceLink(appState.globalNetworkData.links)
-                .id(d => d.id)
-                .strength(link => {
-                    let srcCluster = typeof link.source === 'object' ? link.source.cluster : appState.globalNetworkData.nodes.find(n => n.id === link.source)?.cluster;
-                    let tgtCluster = typeof link.target === 'object' ? link.target.cluster : appState.globalNetworkData.nodes.find(n => n.id === link.target)?.cluster;
-                    return (srcCluster !== undefined && srcCluster === tgtCluster) ? 0.25 : 0.001;
-                })
-                .distance(25)
+            .alpha(1)
+            .alphaDecay(0.018)
+            .velocityDecay(0.28)
+
+            // Global repulsion
+            .force("charge",
+                d3.forceManyBody()
+                    .strength(d => {
+
+                        // hub respingono di più
+                        const deg = d.in_deg || 1;
+
+                        return -110 - Math.sqrt(deg) * 14;
+                    })
+                    .distanceMax(500)
             )
-            .force("x", d3.forceX(d => {
-                const clusterIndex = uniqueClusters.indexOf(d.cluster);
-                const angle = (clusterIndex * 2 * Math.PI) / numClusters;
-                return width / 2 + radMult * Math.cos(angle);
-            }).strength(0.85))
-            .force("y", d3.forceY(d => {
-                const clusterIndex = uniqueClusters.indexOf(d.cluster);
-                const angle = (clusterIndex * 2 * Math.PI) / numClusters;
-                return height / 2 + radMult * Math.sin(angle);
-            }).strength(0.85))
-            .force("collide", d3.forceCollide().radius(d => Math.min(Math.sqrt(d.in_deg || 1) * 1.3 + 2.5, 18) + 3).iterations(3));
+
+            // Link force
+            .force("link",
+                d3.forceLink(links)
+                    .id(d => d.id)
+                    .distance(link => {
+                        const srcCluster =
+                            typeof link.source === 'object'
+                                ? link.source.cluster
+                                : nodes.find(n => n.id === link.source)?.cluster;
+                        const tgtCluster =
+                            typeof link.target === 'object'
+                                ? link.target.cluster
+                                : nodes.find(n => n.id === link.target)?.cluster;
+                        const same = srcCluster === tgtCluster;
+                        return same ? 10 : 320;
+                    })
+                    .strength(link => {
+                        const srcCluster =
+                            typeof link.source === 'object'
+                                ? link.source.cluster
+                                : nodes.find(n => n.id === link.source)?.cluster;
+                        const tgtCluster =
+                            typeof link.target === 'object'
+                                ? link.target.cluster
+                                : nodes.find(n => n.id === link.target)?.cluster;
+                        const same = srcCluster === tgtCluster;
+                        return same ? 0.42 : 0;
+                    })
+            )
+
+            // Community center attraction
+            .force("x",
+                d3.forceX(d => clusterCenters[d.cluster].x)
+                    .strength(0.35)
+            )
+
+            .force("y",
+                d3.forceY(d => clusterCenters[d.cluster].y)
+                    .strength(0.35)
+            )
+
+            // Collision
+            .force("collide",
+                d3.forceCollide()
+                    .radius(d => {
+                        const deg = d.in_deg || 1;
+                        return Math.min(
+                            Math.sqrt(deg) * 1.6 + 5,
+                            24
+                        );
+                    })
+                    .strength(1)
+                    .iterations(6)
+            )
+
+        DOM.simulation.alpha(1).restart();
     } else if (viewName === 'HITS Authority & Hub Profiles') {
         const maxAuth = d3.max(appState.globalNetworkData.nodes, d => d.auth || 0) || 1;
         const maxHub = d3.max(appState.globalNetworkData.nodes, d => d.hub || 0) || 1;
@@ -448,11 +554,22 @@ export function updateGraphLayout(viewName) {
             .force("y", d3.forceY(height / 2).strength(0.06));
     } else if (viewName === 'Connected Components (SCC / WCC)') {
         DOM.simulation
-            .force("center", d3.forceCenter(width / 2, height / 2))
-            .force("charge", d3.forceManyBody().strength(-55).distanceMax(450))
-            .force("link", d3.forceLink(appState.globalNetworkData.links).id(d => d.id).strength(0.2))
-            .force("x", d3.forceX(d => d.in_deg > 1 ? width * 0.45 : width * 0.65).strength(0.25))
-            .force("y", d3.forceY(() => height * 0.5).strength(0.25));
+            .force("charge", d3.forceManyBody().strength(-35).distanceMax(300))
+            .force("link", d3.forceLink(appState.globalNetworkData.links)
+                .id(d => d.id)
+                .distance(d => d.source.is_scc_core && d.target.is_scc_core ? 20 : 40)
+                .strength(0.15)
+            )
+            .force("r", d3.forceRadial(d => {
+                if (d.is_scc_core) {
+                    return 40;
+                } else if (d.is_wcc_main) {
+                    return 220;
+                } else {
+                    return 420;
+                }
+            }, width / 2, height / 2).strength(0.75))
+            .force("collide", d3.forceCollide().radius(d => Math.min(Math.sqrt(d.in_deg || 1) * 1.3 + 2.5, 18) + 2).iterations(2));
     }
     DOM.simulation.alpha(1).restart();
 }
