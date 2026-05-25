@@ -5,7 +5,7 @@
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
     <title>Cora Network Intelligence Hub</title>
 
-    <link rel="stylesheet" href="js/style.css">
+    <link href="visualization/style.css" rel="stylesheet">
 </head>
 <body>
 
@@ -13,31 +13,37 @@
     <div class="sidebar-title">Cora Visualization</div>
 
     <div class="menu-label">Topological Canvas Views</div>
-    <div class="menu-item active" onclick="switchViewEngine('GRAPH', 'Main Visualization', this)">1. Normal Graph
-        Visualization
+    <div class="menu-item active" onclick="switchViewEngine('GRAPH', 'Main Visualization', this)">
+        1. Normal Graph Visualization
     </div>
-    <div class="menu-item" onclick="switchViewEngine('GRAPH', 'Louvain Structural Communities', this)">2. Louvain
-        Clusters
+    <div class="menu-item" onclick="switchViewEngine('GRAPH', 'Louvain Structural Communities', this)">
+        2. Louvain Clusters
     </div>
-    <div class="menu-item" onclick="switchViewEngine('GRAPH', 'HITS Authority & Hub Profiles', this)">3. HITS Centrality
-        Dualism
+    <div class="menu-item" onclick="switchViewEngine('GRAPH', 'HITS Authority & Hub Profiles', this)">
+        3. HITS Centrality Dualism
     </div>
-    <div class="menu-item" onclick="switchViewEngine('GRAPH', 'Weak & Strong Ties Analysis', this)">4. Weak Ties
-        Mapping
+    <div class="menu-item" onclick="switchViewEngine('GRAPH', 'Weak & Strong Ties Analysis', this)">
+        4. Weak Ties Mapping
     </div>
-    <div class="menu-item" onclick="switchViewEngine('GRAPH', 'Connected Components (SCC / WCC)', this)">5. Connected
-        Components
+    <div class="menu-item" onclick="switchViewEngine('GRAPH', 'Connected Components (SCC / WCC)', this)">
+        5. Connected Components
     </div>
-    <div class="menu-item" onclick="switchViewEngine('GRAPH', 'SIR Epidemic Diffusion Simulation', this)">6. SIR
-        Diffusion Simulation
+    <div class="menu-item" onclick="switchViewEngine('GRAPH', 'SIR Epidemic Diffusion Simulation', this)">
+        6. SIR Diffusion Simulation
     </div>
 
     <div class="menu-label">Statistical Analytics</div>
-    <div class="menu-item" onclick="switchViewEngine('ANALYTICS', 'Empirical Degree Distributions', this)">7. Degree
-        Analysis
+    <div class="menu-item" onclick="switchViewEngine('ANALYTICS', 'In-Degree Structural Analysis', this)">
+        7. In-Degree Analysis
     </div>
-    <div class="menu-item" onclick="switchViewEngine('ANALYTICS', 'Null Models Validation', this)">8. Random Graph
-        Benchmarks
+    <div class="menu-item" onclick="switchViewEngine('ANALYTICS', 'Out-Degree Structural Analysis', this)">
+        8. Out-Degree Analysis
+    </div>
+    <div class="menu-item" onclick="switchViewEngine('ANALYTICS', 'Homophily & Mixing Matrix', this)">
+        9. Homophily & Mixing
+    </div>
+    <div class="menu-item" onclick="switchViewEngine('ANALYTICS', 'Benchmark Models Alignment', this)">
+        10. Benchmark Validation
     </div>
 </aside>
 
@@ -47,99 +53,59 @@
         <div class="placeholder-text" id="canvas-target-title">Awaiting Data Engine...</div>
     </div>
 
-    <div id="analytics-workspace">
+    <div id="analytics-workspace"
+         style="display: none; grid-template-columns: repeat(2, 1fr); grid-template-rows: repeat(2, 1fr); gap: 20px; width: 100%; height: 100%;">
         <div class="chart-card">
-            <div class="chart-header" id="c1-title">
-                <span>In-Degree Distribution Histogram</span>
-                <span class="chart-subtitle" id="c1-subtitle">Scale-Free Check</span>
+            <div class="chart-header">
+                <span>Graph Component 1</span>
+                <span class="chart-subtitle">Slot Alpha</span>
             </div>
             <div class="chart-canvas-mock">
-                <div class="analytics-svg-container" id="degree-histogram-canvas">[ D3.js Power-Law Curve Canvas ]</div>
-                <div class="analytics-legend">
-                    <div class="legend-item">
-                        <div class="legend-color" style="background: var(--accent-blue);"></div>
-                        In-Degree Counts
-                    </div>
-                    <div class="legend-item">
-                        <div class="legend-color" style="background: var(--accent-purple);"></div>
-                        Power Law Fit
-                    </div>
-                </div>
+                <div class="analytics-svg-container" id="degree-histogram-canvas"></div>
             </div>
         </div>
 
         <div class="chart-card">
-            <div class="chart-header" id="c2-title">
-                <span>Out-Degree Scale Profiler</span>
-                <span class="chart-subtitle" id="c2-subtitle">Outbound References</span>
+            <div class="chart-header">
+                <span>Graph Component 2</span>
+                <span class="chart-subtitle">Slot Beta</span>
             </div>
             <div class="chart-canvas-mock">
-                <div class="analytics-svg-container" id="out-degree-scatter-canvas">[ Outbound Citation Scatterplot ]
-                </div>
-                <div class="analytics-legend">
-                    <div class="legend-item">
-                        <div class="legend-color" style="background: var(--accent-green);"></div>
-                        Nodes
-                    </div>
-                </div>
+                <div class="analytics-svg-container" id="out-degree-scatter-canvas"></div>
             </div>
         </div>
 
         <div class="chart-card">
-            <div class="chart-header" id="c3-title">
-                <span>Quantile Threshold Filtering Bounds</span>
-                <span class="chart-subtitle" id="c3-subtitle">Cumulative Density Function</span>
+            <div class="chart-header">
+                <span>Graph Component 3</span>
+                <span class="chart-subtitle">Slot Gamma</span>
             </div>
             <div class="chart-canvas-mock">
-                <div class="analytics-svg-container" id="cdf-bounds-canvas">[ D3.js CDF Line Plot ]</div>
-                <div class="analytics-legend">
-                    <div class="legend-item">
-                        <div class="legend-color" style="background: #ff5252;"></div>
-                        P(K ≥ k)
-                    </div>
-                    <div class="legend-item">
-                        <div class="legend-color" style="background: #e040fb;"></div>
-                        95% Quantile
-                    </div>
-                </div>
+                <div class="analytics-svg-container" id="cdf-bounds-canvas"></div>
             </div>
         </div>
 
         <div class="chart-card">
-            <div class="chart-header" id="c4-title">
-                <span>Erdos-Renyi Random Convergence</span>
-                <span class="chart-subtitle" id="c4-subtitle">Real vs Poisson Null Model</span>
+            <div class="chart-header">
+                <span>Graph Component 4</span>
+                <span class="chart-subtitle">Slot Delta</span>
             </div>
             <div class="chart-canvas-mock">
-                <div class="analytics-svg-container" id="random-convergence-canvas">[ Poisson vs Real Degree Variant
-                    Grid ]
-                </div>
-                <div class="analytics-legend">
-                    <div class="legend-item">
-                        <div class="legend-color" style="background: #fff;"></div>
-                        Empirical Cora
-                    </div>
-                    <div class="legend-item">
-                        <div class="legend-color"
-                             style="background: rgba(0, 242, 254, 0.4); border: 1px dashed var(--accent-blue);"></div>
-                        G(n, p) Poisson
-                    </div>
-                </div>
+                <div class="analytics-svg-container" id="random-convergence-canvas"></div>
             </div>
+        </div>
+
+        <div class="floating-panel" id="info-panel">
+            <div class="panel-header" onclick="togglePanelVisibility()">
+                <h3 id="panel-context-title">Global Network Metrics</h3>
+                <button class="minimize-toggle" id="toggle-icon">−</button>
+            </div>
+            <div class="panel-body" id="info-panel-body"></div>
         </div>
     </div>
-
-    <div class="floating-panel" id="info-panel">
-        <div class="panel-header" onclick="togglePanelVisibility()">
-            <h3 id="panel-context-title">Global Network Metrics</h3>
-            <button class="minimize-toggle" id="toggle-icon">−</button>
-        </div>
-        <div class="panel-body" id="info-panel-body"></div>
-    </div>
-
 </main>
 
 <script src="https://d3js.org/d3.v7.min.js"></script>
-<script src="js/main.js" type="module"></script>
+<script src="visualization/main.js" type="module"></script>
 </body>
 </html>

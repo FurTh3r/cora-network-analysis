@@ -96,6 +96,7 @@ window.switchViewEngine = function (engineType, viewDisplayName, menuElement) {
         appState.activeView = viewDisplayName;
         DOM.graphWorkspace.style.display = 'none';
         DOM.analyticsWorkspace.style.display = 'grid';
+        document.getElementById('analytics-workspace').style.display = 'grid';
 
         // Hide side panel when showing analytics view
         if (DOM.infoPanel) DOM.infoPanel.style.display = 'none';
