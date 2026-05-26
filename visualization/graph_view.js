@@ -573,4 +573,3 @@ export function updateGraphLayout(viewName) {
     }
     DOM.simulation.alpha(1).restart();
 }
-
