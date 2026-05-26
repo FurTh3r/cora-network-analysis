@@ -1,4 +1,10 @@
 /**
+ * ============================================================================
+ * PLOT HELPERS FOR VISUALIZATION
+ * ============================================================================
+ */
+
+/**
  * Sets up and renders the base X and Y axes on an SVG element using D3.js,
  * with customizable scales, labels, and tick formatting.
  *
