@@ -12,9 +12,8 @@ import {appState, clusterColors, DOM, transformState} from './state.js';
  */
 export function initializeCanvasD3Graph(nodes, links) {
     const targetTitle = document.getElementById('canvas-target-title');
-    if (targetTitle) {
+    if (targetTitle)
         targetTitle.remove();
-    }
 
     const width = DOM.graphWorkspace.clientWidth;
     const height = DOM.graphWorkspace.clientHeight;
@@ -105,12 +104,14 @@ export function initializeCanvasD3Graph(nodes, links) {
         }
     });
 
+    // Mouse tracking for mouse-out
     d3.select(DOM.canvas).on("mouseout", () => {
         appState.hoveredNode = null;
         DOM.tooltip.style.opacity = '0';
         renderScene(nodes, links);
     });
-    
+
+    // Handle zoom and drag
     d3.select(DOM.canvas)
         .call(zoomBehavior)
         .call(dragBehavior);
@@ -139,13 +140,17 @@ function updateTooltipContent(node) {
         const view = appState.activeView;
 
         if (view === 'Main Visualization' || view.includes('SIR')) {
-            DOM.tooltip.innerHTML = `ID: ${node.id}<br>Field: ${node.field}<br>In-Degree: ${node.in_deg}<br>Out-Degree: ${node.out_deg}`;
+            DOM.tooltip.innerHTML = `ID: ${node.id}<br>Field: ${node.field}<br>In-Degree: ${node.in_deg}<br>
+                Out-Degree: ${node.out_deg}`;
         } else if (view === 'Louvain Structural Communities') {
-            DOM.tooltip.innerHTML = `Community Module: ${node.cluster}<br>ID: ${node.id}<br>PageRank: ${(node.pagerank || 0).toFixed(5)}`;
+            DOM.tooltip.innerHTML = `Community Module: ${node.cluster}<br>ID: ${node.id}<br>PageRank: 
+                ${(node.pagerank || 0).toFixed(5)}`;
         } else if (view === 'HITS Authority & Hub Profiles') {
-            DOM.tooltip.innerHTML = `ID: ${node.id}<br>Authority Score: ${(node.auth || 0).toFixed(5)}<br>Hub Score: ${(node.hub || 0).toFixed(5)}`;
+            DOM.tooltip.innerHTML = `ID: ${node.id}<br>Authority Score: ${(node.auth || 0).toFixed(5)}
+                <br>Hub Score: ${(node.hub || 0).toFixed(5)}`;
         } else if (view === 'Weak & Strong Ties Analysis') {
-            DOM.tooltip.innerHTML = `ID: ${node.id}<br>Cross-Field Node: ${node.in_deg > 5 ? 'Global Interconnector' : 'Local Clusterer'}`;
+            DOM.tooltip.innerHTML = `ID: ${node.id}<br>Cross-Field Node: ${node.in_deg > 5 ?
+                'Global Interconnector' : 'Local Clusterer'}`;
         } else if (view === 'Connected Components (SCC / WCC)') {
             const componentType = node.is_scc_core
                 ? "SCC Core Engine"
@@ -226,9 +231,8 @@ function drawNetwork(nodes, links) {
     const searchedNode = appState.searchedNodeId ? nodes
         .find(n => String(n.id) === appState.searchedNodeId) : null;
 
-    if (appState.activeView === 'Louvain Structural Communities') {
+    if (appState.activeView === 'Louvain Structural Communities')
         drawCommunityHulls(nodes);
-    }
 
     // Drawing the graph Links
     for (let i = 0; i < links.length; i++) {
@@ -255,7 +259,8 @@ function drawNetwork(nodes, links) {
             linkOpacity = 0.15;
         }
 
-        const isConnectedToHover = appState.hoveredNode && (src.id === appState.hoveredNode.id || tgt.id === appState.hoveredNode.id);
+        const isConnectedToHover = appState.hoveredNode && (src.id === appState.hoveredNode.id ||
+            tgt.id === appState.hoveredNode.id);
         const isConnectedToSearch = searchedNode && (src.id === searchedNode.id || tgt.id === searchedNode.id);
 
         if (searchedNode || appState.hoveredNode) {
@@ -390,9 +395,7 @@ export function updateGraphLayout(viewName) {
     const height = DOM.graphWorkspace.clientHeight;
 
     const targetTitle = document.getElementById('canvas-target-title');
-    if (targetTitle) {
-        targetTitle.remove();
-    }
+    if (targetTitle) targetTitle.remove();
 
     DOM.simulation.stop();
     DOM.simulation.stop();
@@ -426,7 +429,8 @@ export function updateGraphLayout(viewName) {
             DOM.simulation
                 .force("charge", d3.forceManyBody().strength(-30).distanceMax(300))
                 .force("link", d3.forceLink(appState.globalNetworkData.links).id(d => d.id).distance(30).strength(0.1))
-                .force("radial", d3.forceRadial(d => (d.in_deg > 10 ? 50 : 250), width / 2, height / 2).strength(0.8));
+                .force("radial", d3.forceRadial(d => (d.in_deg > 10 ? 50 : 250), width / 2, height / 2)
+                    .strength(0.8));
         } else if (appState.mainViewLayoutMode === 'hierarchy') {
             const maxDeg = d3.max(appState.globalNetworkData.nodes, d => d.in_deg || 0) || 1;
             DOM.simulation
@@ -569,7 +573,8 @@ export function updateGraphLayout(viewName) {
                     return 420;
                 }
             }, width / 2, height / 2).strength(0.75))
-            .force("collide", d3.forceCollide().radius(d => Math.min(Math.sqrt(d.in_deg || 1) * 1.3 + 2.5, 18) + 2).iterations(2));
+            .force("collide", d3.forceCollide().radius(d => Math
+                .min(Math.sqrt(d.in_deg || 1) * 1.3 + 2.5, 18) + 2).iterations(2));
     }
     DOM.simulation.alpha(1).restart();
 }
