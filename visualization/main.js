@@ -26,7 +26,7 @@ async function loadNetworkDatabase() {
         initializeTooltip();
 
         if (DOM.canvasTitle) DOM.canvasTitle.innerText = "Loading Cora Database Framework...";
-        const data = await d3.json("cora_visualization_data.json");
+        const data = await d3.json("../cora_visualization_data.json");
         appState.globalNetworkData = data;
 
         // Ego-Network construction

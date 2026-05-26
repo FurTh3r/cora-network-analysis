@@ -32,8 +32,8 @@ import {
  */
 export function renderAnalyticsDashboards(viewName) {
     // Cleaning graphs before adding new data
-    const targets = ["#degree-histogram-canvas", "#out-degree-scatter-canvas", "#cdf-bounds-canvas",
-        "#random-convergence-canvas"];
+    const targets = ["#canvas0", "#canvas1", "#canvas2",
+        "#canvas3"];
     targets.forEach(t => d3.select(t).selectAll("svg").remove());
 
     const data = appState.globalNetworkData;
@@ -55,12 +55,12 @@ export function renderAnalyticsDashboards(viewName) {
 
         // Adding the actual content to the windows
         setTimeout(() => {
-            drawLogLogPMF("#degree-histogram-canvas", data.nodes, "in_deg", "#4facfe",
+            drawLogLogPMF("#canvas0", data.nodes, "in_deg", "#4facfe",
                 "In-Degree (k)", "Probability P(k)");
-            drawCCDFLogLog("#out-degree-scatter-canvas", data.ccdf_in, "#4facfe",
+            drawCCDFLogLog("#canvas1", data.ccdf_in, "#4facfe",
                 "In-Degree (k)", "P(K ≥ k)");
-            drawRealVsErdosPercentile("#cdf-bounds-canvas", data, "#4facfe");
-            drawTop10Horizontal("#random-convergence-canvas", data.nodes, "in_deg", "#4facfe");
+            drawRealVsErdosPercentile("#canvas2", data, "#4facfe");
+            drawTop10Horizontal("#canvas3", data.nodes, "in_deg", "#4facfe");
         }, 30);
 
     } else if (viewName === 'Out-Degree Structural Analysis') {
@@ -75,28 +75,29 @@ export function renderAnalyticsDashboards(viewName) {
 
         // Adding the actual content to the windows
         setTimeout(() => {
-            drawCenteredPMF("#degree-histogram-canvas", data.nodes, "out_deg", "#00ff87");
-            drawExtendedCCDF("#out-degree-scatter-canvas", data.ccdf_out, "#00ff87");
-            drawJointDegreeScatter("#cdf-bounds-canvas", data.nodes);
-            drawErdosOutCCDF("#random-convergence-canvas", data.mean_out, "#00ff87");
+            drawCenteredPMF("#canvas0", data.nodes, "out_deg", "#00ff87");
+            drawExtendedCCDF("#canvas1", data.ccdf_out, "#00ff87");
+            drawJointDegreeScatter("#canvas2", data.nodes);
+            drawErdosOutCCDF("#canvas3", data.mean_out, "#00ff87");
         }, 30);
 
     } else if (viewName === 'Homophily & Mixing Matrix') {
         // Configuring the window titles
         configureCardHeader(cards[0], "Mixing Matrix Probabilities",
             "Categorical Link Transition Density");
-        configureCardHeader(cards[1], "Structural Class Assortativity",
+        configureCardHeader(cards[1], "Neighborhood Class Dispersal Spectrum", "Neighbor Homogeneity Variant");
+        configureCardHeader(cards[2], "Structural Class Assortativity",
             "Inter-Group Categorical Connection Matrix");
-        configureCardHeader(cards[2], "Observed Cross-Group Edges vs Null Model (2pq)",
+        configureCardHeader(cards[3], "Observed Cross-Group Edges vs Null Model (2pq)",
             "Homophily Metric Boundary Check");
-        //configureCardHeader(cards[3], "Neighborhood Class Dispersal Spectrum", "Neighbor Homogeneity Variant"); TODO
+
 
         // Adding the actual content to the windows
         setTimeout(() => {
-            drawReadableMixingMatrix("#degree-histogram-canvas", data.mixing_matrix);
-            drawCategoricalAssortativity("#out-degree-scatter-canvas", data);
-            drawCrossVsExpected("#cdf-bounds-canvas", data);
-            //drawNeighborhoodDispersal("#random-convergence-canvas", data); TODO
+            drawReadableMixingMatrix("#canvas0", data.mixing_matrix);
+            drawTop10Horizontal("#canvas1", data.nodes, "in_deg", "#4facfe");
+            drawCategoricalAssortativity("#canvas2", data);
+            drawCrossVsExpected("#canvas3", data);
         }, 30);
 
     } else if (viewName === 'Benchmark Models Alignment') {
@@ -112,21 +113,21 @@ export function renderAnalyticsDashboards(viewName) {
 
         // Adding the actual content to the windows
         setTimeout(() => {
-            drawTripleCCDF("#degree-histogram-canvas", data);
+            drawTripleCCDF("#canvas0", data);
 
-            drawBenchmarkBarChart("#out-degree-scatter-canvas", [
+            drawBenchmarkBarChart("#canvas1", [
                 {model: "Empirical Cora", val: data.benchmark_metrics.cora_clustering || "N/A", color: "#00ff87"},
                 {model: "Erdos G(n,p)", val: data.benchmark_metrics.erdos_clustering || "N/A", color: "#797b93"},
                 {model: "Config. Model", val: data.benchmark_metrics.config_clustering || "N/A", color: "#ff4da6"}
             ], "Clustering Coeff.");
 
-            drawBenchmarkBarChart("#cdf-bounds-canvas", [
+            drawBenchmarkBarChart("#canvas2", [
                 {model: "Empirical Cora", val: data.benchmark_metrics.cora_transitivity || "N/A", color: "#00f2fe"},
                 {model: "Erdos G(n,p)", val: data.benchmark_metrics.erdos_transitivity || "N/A", color: "#797b93"},
                 {model: "Config. Model", val: data.benchmark_metrics.config_transitivity || "N/A", color: "#ff4da6"}
             ], "Global Transitivity");
 
-            drawBenchmarkBarChart("#random-convergence-canvas", [
+            drawBenchmarkBarChart("#canvas3", [
                 {model: "Empirical Cora", val: data.benchmark_metrics.cora_reciprocity || "N/A", color: "#b337ff"},
                 {model: "Erdos G(n,p)", val: data.benchmark_metrics.erdos_reciprocity || "N/A", color: "#797b93"},
                 {model: "Config. Model", val: data.benchmark_metrics.config_reciprocity || "N/A", color: "#ff4da6"}
