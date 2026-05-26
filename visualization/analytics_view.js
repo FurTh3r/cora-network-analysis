@@ -105,21 +105,21 @@ export function renderAnalyticsDashboards(viewName) {
             drawTripleCCDF("#degree-histogram-canvas", data);
 
             drawBenchmarkBarChart("#out-degree-scatter-canvas", [
-                {model: "Empirical Cora", val: data.cora_acc || 0, color: "#00ff87"},
-                {model: "Erdos G(n,p)", val: data.erdos_acc || 0, color: "#797b93"},
-                {model: "Config. Model", val: data.config_acc || 0, color: "#ff4da6"}
+                {model: "Empirical Cora", val: data.benchmark_metrics.cora_clustering || "N/A", color: "#00ff87"},
+                {model: "Erdos G(n,p)", val: data.benchmark_metrics.erdos_clustering || "N/A", color: "#797b93"},
+                {model: "Config. Model", val: data.benchmark_metrics.config_clustering || "N/A", color: "#ff4da6"}
             ], "Clustering Coeff.");
 
             drawBenchmarkBarChart("#cdf-bounds-canvas", [
-                {model: "Empirical Cora", val: data.cora_transitivity || 0, color: "#00f2fe"},
-                {model: "Erdos G(n,p)", val: data.erdos_transitivity || 0, color: "#797b93"},
-                {model: "Config. Model", val: data.config_transitivity || 0, color: "#ff4da6"}
+                {model: "Empirical Cora", val: data.benchmark_metrics.cora_transitivity || "N/A", color: "#00f2fe"},
+                {model: "Erdos G(n,p)", val: data.benchmark_metrics.erdos_transitivity || "N/A", color: "#797b93"},
+                {model: "Config. Model", val: data.benchmark_metrics.config_transitivity || "N/A", color: "#ff4da6"}
             ], "Global Transitivity");
 
             drawBenchmarkBarChart("#random-convergence-canvas", [
-                {model: "Empirical Cora", val: data.cora_reciprocity || 0, color: "#b337ff"},
-                {model: "Erdos G(n,p)", val: data.erdos_reciprocity || 0, color: "#797b93"},
-                {model: "Config. Model", val: data.config_reciprocity || 0, color: "#ff4da6"}
+                {model: "Empirical Cora", val: data.benchmark_metrics.cora_reciprocity|| "N/A", color: "#b337ff"},
+                {model: "Erdos G(n,p)", val: data.benchmark_metrics.erdos_reciprocity || "N/A", color: "#797b93"},
+                {model: "Config. Model", val: data.benchmark_metrics.config_reciprocity || "N/A", color: "#ff4da6"}
             ], "Reciprocity Metric");
         }, 30);
     }

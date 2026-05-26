@@ -308,7 +308,7 @@ function updateSidebarMetrics(metrics) {
             
             <div class="metric-row" title="The average number of steps along the shortest paths for all possible pairs of network nodes.">
                 <span class="metric-label">Avg Path Length:</span>
-                <span class="metric-value">${metrics.apl ? metrics.apl.toFixed(4) : '0'}</span>
+                <span class="metric-value">${metrics.benchmark_metrics.apl ? metrics.benchmark_metrics.apl.toFixed(4) : '0'}</span>
             </div>
             
             <div class="metric-row" title="The ratio of actual edges to the total number of possible edges, measuring how interconnected the network is.">
@@ -323,7 +323,7 @@ function updateSidebarMetrics(metrics) {
             
             <div class="metric-row" title="A measure of the degree to which nodes in a graph tend to cluster together, forming tight citation triangles.">
                 <span class="metric-label">Avg Clustering Coeff.:</span>
-                <span class="metric-value">${metrics.acc ? metrics.acc.toFixed(4) : '0'}</span>
+                <span class="metric-value">${metrics.benchmark_metrics.cora_clustering ? metrics.benchmark_metrics.cora_clustering.toFixed(4) : '0'}</span>
             </div>
         `;
     } else if (view === 'Louvain Structural Communities') {
@@ -335,7 +335,7 @@ function updateSidebarMetrics(metrics) {
         `;
     } else if (view === 'HITS Authority & Hub Profiles') {
         body.innerHTML = interactionTogglesHTML + `
-            <div class="metric-row"><span class="metric-label">Global Reciprocity:</span><span class="metric-value">${metrics.global_reciprocity ? metrics.global_reciprocity.toFixed(4) : 'N/A'}</span></div>
+            <div class="metric-row"><span class="metric-label">Global Reciprocity:</span><span class="metric-value">${metrics.benchmark_metrics.cora_reciprocity ? metrics.benchmark_metrics.cora_reciprocity.toFixed(4) : 'N/A'}</span></div>
             <div style="margin-top: 15px; font-size: 0.85em;">
                 <div style="color: #ffaa00; margin-bottom: 5px;">■ Pure Authority (Cited often)</div>
                 <div style="color: #00f2fe; margin-bottom: 5px;">■ Pure Hub (Cites often)</div>
@@ -359,7 +359,7 @@ function updateSidebarMetrics(metrics) {
             <div class="metric-row" style="margin-bottom: 8px;">
                 <span class="metric-label">Strong Components (SCC):</span>
                 <span class="metric-value">
-                    ${metrics.scc || 'N/A'} 
+                    ${metrics.scc_count || 'N/A'} 
                     <span style="color: #00ff87; font-size: 0.85em; font-weight: normal; margin-left: 5px;">
                         (Giant Core: ${giantCoreSize} nodes)
                     </span>
@@ -369,7 +369,7 @@ function updateSidebarMetrics(metrics) {
             <div class="metric-row" style="margin-bottom: 12px;">
                 <span class="metric-label">Weak Components (WCC):</span>
                 <span class="metric-value">
-                    ${metrics.wcc || 'N/A'} 
+                    ${metrics.wcc_count || 'N/A'} 
                     <span style="color: #4facfe; font-size: 0.85em; font-weight: normal; margin-left: 5px;">
                         (Main Body: ~${mainBodySize} nodes)
                     </span>
