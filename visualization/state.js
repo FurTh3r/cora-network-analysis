@@ -6,9 +6,30 @@
 
 // Color palette for Louvain Community detection
 export const clusterColors = [
-    '#00f2fe', '#ff3d71', '#00e5ff', '#ffaa00', '#b337ff',
-    '#73ff00', '#ff00e5', '#2671ff', '#00ff87', '#ff5e62',
-    '#ffe600', '#bf00ff'
+    '#4facfe',
+    '#ff4da6',
+    '#00ff87',
+    '#ffaa00',
+    '#a15eff',
+    '#00e5ff',
+    '#ff5e62',
+    '#80e5ff',
+    '#ffda44',
+    '#38ef7d',
+    '#e14eca',
+    '#2575fc',
+    '#ff7e40',
+    '#1dd1a1',
+    '#ff6b6b',
+    '#a55eea',
+    '#00d2d3',
+    '#ff9ff3',
+    '#feca57',
+    '#54a0ff',
+    '#10ac84',
+    '#ee5253',
+    '#05c46b',
+    '#5758bb'
 ];
 
 // Application state
@@ -50,7 +71,10 @@ export const DOM = {
     tooltip: null
 };
 
-// Dynamically create tooltip element
+/**
+ * Initializes a tooltip element and appends it to the document body.
+ * The tooltip is styled with default properties to appear as a floating element.
+ */
 export function initializeTooltip() {
     DOM.tooltip = document.createElement('div');
     Object.assign(DOM.tooltip.style, {
