@@ -182,7 +182,7 @@ function updateSidebarMetrics(metrics) {
 
     const view = appState.activeView;
 
-    // Toggles generali
+    // General Toggles
     const interactionTogglesHTML = `
         <div class="widget-wrapper-toggle">
             <label class="toggle-label-custom">
@@ -207,7 +207,7 @@ function updateSidebarMetrics(metrics) {
         </div>
     `;
 
-    // Controlli di ricerca e layout
+    // Search and layout controls
     let mainViewControlsHTML = '';
     if (view === 'Main Visualization') {
         mainViewControlsHTML = `
@@ -244,7 +244,7 @@ function updateSidebarMetrics(metrics) {
         `;
     }
 
-    // Rendering in base alla vista attiva (senza la stringa extractedStylesHTML +)
+    // Rendering based on active view (without extractedStylesHTML +)
     if (view === 'Main Visualization') {
         const gradientLegendHTML = `
             <div class="gradient-legend-container">
@@ -405,7 +405,7 @@ function updateSIRSidebarMetrics(metrics) {
         if (iEl) iEl.textContent = appState.currentSirI.toString();
         if (rEl) rEl.textContent = appState.currentSirR.toString();
 
-        // render only if requested
+        // Render only if requested
         if (shouldRender && appState.globalNetworkData) {
             requestAnimationFrame(() => {
                 renderScene(

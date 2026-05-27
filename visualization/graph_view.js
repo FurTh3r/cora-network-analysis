@@ -267,15 +267,13 @@ function drawNetwork(nodes, links) {
             linkOpacity = isSpecialLink ? 0.15 : 0.05;
 
             if (appState.activeView === 'Louvain Structural Communities' && appState.hoveredNode) {
-                if (src.cluster === appState.hoveredNode.cluster && tgt.cluster === appState.hoveredNode.cluster) {
+                if (src.cluster === appState.hoveredNode.cluster && tgt.cluster === appState.hoveredNode.cluster)
                     linkOpacity = 0.75;
-                } else {
+                else
                     linkOpacity = 0.02;
-                }
             } else {
-                if (isConnectedToHover || isConnectedToSearch) {
+                if (isConnectedToHover || isConnectedToSearch)
                     linkOpacity = isSpecialLink ? 0.95 : 0.85;
-                }
             }
         }
 
@@ -416,6 +414,18 @@ export function updateGraphLayout(viewName) {
         node.fx = null;
         node.fy = null;
     });
+
+    // Resetting positions in the beginning
+    if (DOM.canvas) {
+        const startScale = 0.68;
+
+        const centeredTransform = d3.zoomIdentity
+            .translate(width * (1 - startScale) / 2, height * (1 - startScale) / 2)
+            .scale(startScale);
+
+        transformState.current = centeredTransform;
+        d3.select(DOM.canvas).property("__zoom", centeredTransform);
+    }
 
     if (viewName === 'Main Visualization' || viewName.includes('SIR')) {
         if (appState.mainViewLayoutMode === 'force' || viewName.includes('SIR')) {

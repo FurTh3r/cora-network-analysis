@@ -30,11 +30,11 @@ function setupBaseAxes(svg, xScale, yScale, height, width,
             const rawMax = xDomain[1];
             let dynamicMaxTick;
             if (rawMax <= 50)
-                dynamicMaxTick = Math.ceil(rawMax / 10) * 10;   // e.g., 34 becomes 40
+                dynamicMaxTick = Math.ceil(rawMax / 10) * 10;
             else if (rawMax <= 200)
-                dynamicMaxTick = Math.ceil(rawMax / 50) * 50;   // e.g., 166 becomes 200
+                dynamicMaxTick = Math.ceil(rawMax / 50) * 50;
             else
-                dynamicMaxTick = Math.ceil(rawMax / 100) * 100; // e.g., 250 becomes 300
+                dynamicMaxTick = Math.ceil(rawMax / 100) * 100;
 
             // Update the scale domain dynamically so it stops right after our smart ceiling
             xScale.domain([xDomain[0], dynamicMaxTick]);
@@ -87,12 +87,12 @@ function setupBaseAxes(svg, xScale, yScale, height, width,
         yAxis.tickValues(yLogTicks);
 
         if (sci_notation) {
-            yAxis.tickFormat(d3.format(".0e")); // e.g., 1e+0, 1e-1, 1e-2
+            yAxis.tickFormat(d3.format(".0e")); // 1e+0, 1e-1, 1e-2
         } else {
-            yAxis.tickFormat(d3.format("~f"));  // e.g., 1, 0.1, 0.01, 0.001 (fixes .0 crash)
+            yAxis.tickFormat(d3.format("~f"));  // 1, 0.1, 0.01, 0.001
         }
     } else if (typeof yScale.ticks === "function")
-        yAxis.ticks(5); // Standard linear scale formatting
+        yAxis.ticks(5);
 
     svg.append("g")
         .attr("class", "y-axis")
@@ -393,7 +393,7 @@ export function drawCenteredPMF(selector, nodes, attr, color) {
         .style("fill", "#797b93")
         .style("font-size", "10px");
 
-    // Render Y Axis (with dynamic fix to drop the first overlapping baseline label)
+    // Render Y Axis
     const yAxis = d3.axisLeft(y).ticks(5, "%");
 
     svg.append("g")
@@ -418,7 +418,7 @@ export function drawCenteredPMF(selector, nodes, attr, color) {
         .attr("height", d => height - y(d.count / total))
         .style("fill", color)
         .style("opacity", 0.85)
-        .attr("rx", 2); // Rounded edges for modern dashboard appearance
+        .attr("rx", 2);
 
     // X-Axis Label
     svg.append("text")
@@ -433,40 +433,11 @@ export function drawCenteredPMF(selector, nodes, attr, color) {
     svg.append("text")
         .attr("transform", "rotate(-90)")
         .attr("x", -height / 2)
-        .attr("y", -36) // Shifted slightly outward to prevent crash with tick percentages
+        .attr("y", -36)
         .attr("text-anchor", "middle")
         .style("fill", "#797b93")
         .style("font-size", "10px")
         .text("Probability P(k)");
-}
-
-/**
- * Draws an Extended Complementary Cumulative Distribution Function (CCDF) plot within a specified container.
- *
- * @param {string} selector - A CSS selector string identifying the HTML container for the plot.
- * @param {Array<Object>} ccdfData - An array of data points representing CCDF values. Each object should have
- * properties corresponding to probabilities (e.g., {k, p}).
- * @param {string} color - The color to be used for plotting the CCDF line.
- * @return {void} This function does not return a value.
- */
-export function drawExtendedCCDF(selector, ccdfData, color) {
-    const container = d3.select(selector);
-    if (!ccdfData || ccdfData.length === 0) return;
-    const w = container.node().getBoundingClientRect().width - 10,
-        h = container.node().getBoundingClientRect().height || 180;
-    const margin = {top: 15, right: 20, bottom: 35, left: 65}, width = w - margin.left - margin.right,
-        height = h - margin.top - margin.bottom;
-    const svg = container.append("svg").attr("width", w).attr("height", h).append("g").attr("transform",
-        `translate(${margin.left},${margin.top})`);
-
-    const points = ccdfData.map((p, k) => ({k, p})).slice(0, 30);
-    const x = d3.scaleLinear().domain([0, 30]).range([0, width]);
-    const y = d3.scaleLinear().domain([0, 1]).range([height, 0]);
-
-    setupBaseAxes(svg, x, y, height, width, "Out-Degree (k)", "P(K ≥ k)");
-    svg.append("path").datum(points).attr("fill", "none").attr("stroke", color).attr("stroke-width", 2)
-        .attr("d", d3.line().x(d => x(d.k)).y(d => y(d.p)));
-    createLegend(svg, [{text: "Out-CCDF (Light Tail)", color: color, type: "line"}], width-10);
 }
 
 /**
@@ -521,7 +492,7 @@ export function drawJointDegreeScatter(selector, nodes) {
     svg.selectAll("circle").data(validNodes).enter().append("circle")
         .attr("cx", d => x(d.in_deg) + (Math.random() - 0.5) * 3)
         .attr("cy", d => y(d.out_deg) + (Math.random() - 0.5) * 3)
-        .attr("r", 1.8) // Leggermente più piccolo per un effetto ancora più "density-map"
+        .attr("r", 1.8)
         .style("fill", "#00f2fe")
         .style("opacity", 0.25);
 
@@ -534,46 +505,6 @@ export function drawJointDegreeScatter(selector, nodes) {
         .style("fill", "#797b93").style("font-size", "10px").text("Out-Degree (k_out)");
 
     createLegend(svg, [{text: "Paper Distribution", color: "#00f2fe", type: "dot"}], width);
-}
-
-/**
- * Draws the Erdos-Renyi Out-Degree Complementary Cumulative Distribution Function (CCDF) on a given container.
- * This function visualizes the theoretical distribution using D3.js.
- *
- * @param {string} selector - The CSS selector of the container where the SVG will be appended.
- * @param {number} lambda - The average out-degree (mean) of the Erdos-Renyi graph.
- * @param {string} color - The color used for the line plotting the theoretical Out-CCDF.
- * @return {void} Does not return a value. The function dynamically appends the visualization to the specified
- * container.
- */
-export function drawErdosOutCCDF(selector, lambda, color) {
-    const container = d3.select(selector);
-    const w = container.node().getBoundingClientRect().width - 10,
-        h = container.node().getBoundingClientRect().height || 180;
-    const margin = {top: 15, right: 20, bottom: 35, left: 65}, width = w - margin.left - margin.right,
-        height = h - margin.top - margin.bottom;
-    const svg = container.append("svg").attr("width", w).attr("height", h).append("g").attr("transform",
-        `translate(${margin.left},${margin.top})`);
-
-    let cumPoisson = 0;
-    let pk = Math.exp(-lambda); // Represents P(K = 0) initially
-
-    const erdosPoints = d3.range(0, 25).map(k => {
-        if (k > 0) {
-            pk = (pk * lambda) / k; // Incremental derivation of Poisson term without calling a custom factorial()
-        }
-        const res = {k, p: Math.max(0, 1 - cumPoisson)};
-        cumPoisson += pk;
-        return res;
-    });
-
-    const x = d3.scaleLinear().domain([0, 20]).range([0, width]);
-    const y = d3.scaleLinear().domain([0, 1]).range([height, 0]);
-
-    setupBaseAxes(svg, x, y, height, width, "Out-Degree (k)", "P(K ≥ k)");
-    svg.append("path").datum(erdosPoints).attr("fill", "none").attr("stroke", color).attr("stroke-dasharray", "4,4")
-        .attr("stroke-width", 2).attr("d", d3.line().x(d => x(d.k)).y(d => y(d.p)));
-    createLegend(svg, [{text: "ER Theoretical Out-CCDF", color: color, type: "line", dash: "4,4"}], width-20);
 }
 
 /**
@@ -665,8 +596,6 @@ export function drawReadableMixingMatrix(selector, data) {
         }
     }
 
-    // --- ENHANCED COLOR BAR LEGEND ---
-    // Moved slightly to the right to clear space from the heatmap edge
     const colorBar = svg.append("g").attr("transform", `translate(${width + 12}, 0)`);
     const barScale = d3.scaleLinear().domain([0, maxVal]).range([height, 0]);
 
@@ -717,61 +646,11 @@ export function createShortenedFieldList(fieldList) {
 }
 
 /**
- * Draws a bar chart representing categorical assortativity values for different network models.
- *
- * @param {string} selector - A CSS selector string to target the container element where the chart will be rendered.
- * @param {Object} networkData - An object containing assortativity values for different network models.
- * @param {number} networkData.assortativity_erdos - Assortativity value for the Erdős-Rényi model. Defaults to 0.0 if
- * not provided.
- * @param {number} networkData.assortativity_config - Assortativity value for the Configuration Model. Defaults to 0.0
- * if not provided.
- * @param {number} networkData.assortativity - Assortativity value for the observed Cora network. Defaults to 0.0 if
- * not provided.
- * @return {void} This function does not return anything. It renders the chart directly inside the specified container.
- */
-export function drawCategoricalAssortativity(selector, networkData) {
-    const container = d3.select(selector);
-    const w = container.node().getBoundingClientRect().width - 10,
-        h = container.node().getBoundingClientRect().height || 180;
-    const margin = {top: 15, right: 20, bottom: 35, left: 65}, width = w - margin.left - margin.right,
-        height = h - margin.top - margin.bottom;
-    const svg = container.append("svg").attr("width", w).attr("height", h).append("g").attr("transform",
-        `translate(${margin.left},${margin.top})`);
-
-    const categories = ["Erdős-Rényi (r)", "Configuration Model (r)", "Observed Cora (r)"];
-
-    const values = [
-        networkData.assortativity_erdos || 0.0,
-        networkData.assortativity_config || 0.0,
-        networkData.assortativity || 0.0
-    ];
-
-    const x = d3.scaleBand().domain(categories).range([0, width]).padding(0.4);
-    const y = d3.scaleLinear().domain([-0.5, 1.0]).range([height, 0]);
-
-    svg.append("g").attr("transform", `translate(0,${y(0)})`).call(d3.axisBottom(x)).style("color", "#797b93")
-        .selectAll("text")
-        .attr("transform", "translate(0,6)").style("fill", "#797b93").style("font-size", "8px");
-
-    svg.append("g").call(d3.axisLeft(y).ticks(5)).style("color", "#797b93").selectAll("text").style("fill", "#797b93");
-
-    svg.selectAll("rect").data(values).enter().append("rect")
-        .attr("x", (d, i) => x(categories[i])).attr("y", d => d >= 0 ? y(d) : y(0))
-        .attr("width", x.bandwidth()).attr("height", d => Math.abs(y(d) - y(0)))
-        .style("fill", (d, i) => {
-            if (i === 0) return "#00ff87";
-            if (i === 1) return "#00f2fe";
-            return "#ff4da6";
-        })
-        .attr("rx", 2);
-}
-
-/**
  * Renders a bar chart comparing observed cross-group values against expected values using D3.js.
  *
  * @param {string} selector - A CSS selector string used to select the DOM element where the chart will be drawn.
  * @param {Object} networkData - Data related to the network. This parameter is required for potential future extensions,
- *                               even though it is not currently utilized in this implementation.
+ *                               even though it is not currently used in this implementation.
  * @return {void} This method does not return any value, as it directly manipulates the DOM to render the chart.
  */
 export function drawCrossVsExpected(selector, networkData) {
@@ -801,6 +680,16 @@ export function drawCrossVsExpected(selector, networkData) {
         .attr("height", d => height - y(d.value))
         .style("fill", (d, i) => i === 0 ? "#00f2fe" : "#ff4da6")
         .style("stroke-width", (d, i) => i === 1 ? 1.5 : 0).attr("rx", 3);
+
+    svg.append("text")
+        .attr("transform", "rotate(-90)")
+        .attr("y", -margin.left + 20)
+        .attr("x", -height / 2)
+        .attr("text-anchor", "middle")
+        .style("fill", "#797b93")
+        .style("font-size", "10px")
+        .style("font-weight", "500")
+        .text("Link fraction");
 }
 
 /**

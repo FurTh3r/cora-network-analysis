@@ -6,12 +6,9 @@
 import {appState} from './state.js';
 import {
     drawBenchmarkBarChart,
-    drawCategoricalAssortativity,
     drawCCDFLogLog,
     drawCenteredPMF,
     drawCrossVsExpected,
-    drawErdosOutCCDF,
-    drawExtendedCCDF,
     drawJointDegreeScatter,
     drawLogLogPMF,
     drawReadableMixingMatrix,
@@ -70,15 +67,15 @@ export function renderAnalyticsDashboards(viewName) {
             "Light-Tail Structural Compaction");
         configureCardHeader(cards[2], "Joint Degree Scatterplot",
             "In-Degree vs Out-Degree Correlation Profiles");
-        configureCardHeader(cards[3], "Out-Degree Erdos-Renyi CCDF (Linear)",
+        configureCardHeader(cards[3], "In-Degree CCDF Tail (Log-Log)",
             "Theoretical Poisson Edge Limits");
 
         // Adding the actual content to the windows
         setTimeout(() => {
             drawCenteredPMF("#canvas0", data.nodes, "out_deg", "#00ff87");
-            drawExtendedCCDF("#canvas1", data.ccdf_out, "#00ff87");
+            drawCCDFLogLog("#canvas1", data.ccdf_out, "#00ff87", "Out-Degree (k)", "P(K ≥ k)");
             drawJointDegreeScatter("#canvas2", data.nodes);
-            drawErdosOutCCDF("#canvas3", data.mean_out, "#00ff87");
+            drawCCDFLogLog("#canvas3", data.ccdf_in, "#4facfe", "In-Degree (k)", "P(K ≥ k)");
         }, 30);
 
     } else if (viewName === 'Homophily & Mixing Matrix') {
@@ -89,7 +86,6 @@ export function renderAnalyticsDashboards(viewName) {
             "Homophily Boundary Check")
         configureCardHeader(cards[2], "", "", true);
         configureCardHeader(cards[3], "", "", true);
-
 
         // Adding the actual content to the windows
         setTimeout(() => {
