@@ -212,8 +212,10 @@ export function drawCCDFLogLog(selector, ccdfData, color, xLabel, yLabel) {
         `translate(${margin.left},${margin.top})`);
 
     // Strict filtering for log scale compatibility
-    const points = ccdfData.map((p, k) => ({k: k, p: p}))
-        .filter(d => d.k > 0 && d.p > 0);
+    const points = Object.keys(ccdfData).map(degree => ({
+        k: parseInt(degree),
+        p: ccdfData[degree]
+    })).filter(d => d.k > 0 && d.p > 0);
 
     const x = d3.scaleLog().domain([1, d3.max(points, d => d.k) || 10]).range([0, width]);
     const y = d3.scaleLog().domain([d3.min(points, d => d.p) || 0.001, 1]).range([height, 0]);
@@ -245,8 +247,11 @@ export function drawRealVsErdosPercentile(selector, networkData, color) {
     const svg = container.append("svg").attr("width", w).attr("height", h).append("g").attr("transform",
         `translate(${margin.left},${margin.top})`);
 
-    const ccdfReal = (networkData.ccdf_in || []).map((p, k) => ({k, p}))
-        .filter(d => d.k > 0 && d.p > 0);
+    const rawReal = networkData.ccdf_in || {};
+    const ccdfReal = Object.keys(rawReal).map(degree => ({
+        k: parseInt(degree),
+        p: rawReal[degree]
+    })).filter(d => d.k > 0 && d.p > 0);
 
     // Protective filtering against the rapid exponential drop of Erdos graphs
     const ccdfErdos = (networkData.ccdf_er || []).map((p, k) => ({k, p}))
@@ -295,15 +300,17 @@ export function drawRealVsErdosPercentile(selector, networkData, color) {
 }
 
 /**
- * Renders a horizontal bar chart displaying the top 10 nodes based on a specified attribute.
+ * Renders a horizontal bar chart displaying the top 10 elements based on a specified attribute.
+ * The chart is drawn within a specified container, with bars colored using a gradient from startColor to endColor.
  *
- * @param {string} selector - A CSS selector specifying the container element where the chart will be appended.
- * @param {Array} nodes - An array of node objects containing the data to be visualized.
- * @param {string} attr - The attribute in the node objects to be used for sorting and determining bar length.
- * @param {string} color - The fill color to be applied to the bars in the chart.
- * @return {void} This function does not return a value. It directly manipulates the DOM to render the chart.
+ * @param {string} selector - The CSS selector of the container element where the chart will be drawn.
+ * @param {Array<Object>} nodes - The dataset containing nodes to be visualized, where each node is an object.
+ * @param {string} attr - The attribute in the dataset used to determine the bar lengths.
+ * @param {string} startColor - The starting color of the color gradient for the bars.
+ * @param {string} endColor - The ending color of the color gradient for the bars.
+ * @return {void} No value is returned by this function.
  */
-export function drawTop10Horizontal(selector, nodes, attr, color) {
+export function drawTop10Horizontal(selector, nodes, attr, startColor, endColor) {
     const container = d3.select(selector);
     const w = container.node().getBoundingClientRect().width - 10,
         h = container.node().getBoundingClientRect().height || 180;
@@ -318,16 +325,21 @@ export function drawTop10Horizontal(selector, nodes, attr, color) {
         .range([0, height]).padding(0.2);
     const x = d3.scaleLinear().domain([0, d3.max(top10, d => d[attr]) || 1]).range([0, width]);
 
-    // Render linear axes natively without invoking setupBaseAxes due to customized string formatting on bands
+    const colorInterpolator = d3.interpolateRgb(startColor, endColor);
+
     svg.append("g").attr("transform", `translate(0,${height})`).call(d3.axisBottom(x).ticks(5))
         .style("color", "#797b93").selectAll("text").style("fill", "#797b93");
     svg.append("g").call(d3.axisLeft(y)).style("color", "#797b93").selectAll("text")
         .style("fill", "#797b93").style("font-size", "9px");
 
     svg.selectAll("rect").data(top10).enter().append("rect")
-        .attr("x", 0).attr("y", d => y(`Node ${d.id || d.index}`)).attr("width", d => x(d[attr]))
+        .attr("x", 0)
+        .attr("y", (d, i) => y(`Node ${d.id || i}`))
+        .attr("width", d => x(d[attr]))
         .attr("height", y.bandwidth())
-        .style("fill", color).style("opacity", 0.85).attr("rx", 2);
+        .style("fill", (d, i) => colorInterpolator(i / 9))
+        .style("opacity", 0.85)
+        .attr("rx", 2);
 
     svg.append("text").attr("x", width / 2).attr("y", height + 26).attr("text-anchor", "middle")
         .style("fill", "#797b93").style("font-size", "10px").text("Degree Value");
@@ -454,38 +466,74 @@ export function drawExtendedCCDF(selector, ccdfData, color) {
     setupBaseAxes(svg, x, y, height, width, "Out-Degree (k)", "P(K ≥ k)");
     svg.append("path").datum(points).attr("fill", "none").attr("stroke", color).attr("stroke-width", 2)
         .attr("d", d3.line().x(d => x(d.k)).y(d => y(d.p)));
-    createLegend(svg, [{text: "Out-CCDF (Light Tail)", color: color, type: "line"}], width);
+    createLegend(svg, [{text: "Out-CCDF (Light Tail)", color: color, type: "line"}], width-10);
 }
 
 /**
- * Draws a scatter plot of the joint degree distribution for a network, plotting the in-degree versus out-degree of
- * nodes.
+ * Renders a joint degree scatterplot, visualizing the relationship between in-degrees and out-degrees for nodes.
  *
- * @param {string} selector - The CSS selector for the container element where the scatter plot will be rendered.
- * @param {Array<Object>} nodes - An array of node objects, each containing `in_deg` and `out_deg` properties
- *                                representing the in-degree and out-degree of the node, respectively.
- * @return {void} This function does not return any value but renders the plot in the specified container.
+ * @param {string} selector - A CSS selector string used to target the container where the graph will be drawn.
+ * @param {Array<Object>} nodes - An array of node objects, where each node contains properties `in_deg` (in-degree)
+ * and `out_deg` (out-degree).
+ * @return {void} - Does not return a value; the function manipulates the DOM to render the scatterplot visualization.
  */
 export function drawJointDegreeScatter(selector, nodes) {
     const container = d3.select(selector);
     const w = container.node().getBoundingClientRect().width - 10,
         h = container.node().getBoundingClientRect().height || 180;
-    const margin = {top: 15, right: 20, bottom: 35, left: 65}, width = w - margin.left - margin.right,
+    const margin = {top: 15, right: 20, bottom: 35, left: 45},
+        width = w - margin.left - margin.right,
         height = h - margin.top - margin.bottom;
+
     const svg = container.append("svg").attr("width", w).attr("height", h).append("g").attr("transform",
         `translate(${margin.left},${margin.top})`);
 
-    // Safe filtering to ensure nodes mapped to log scales are strictly positive
     const validNodes = nodes.filter(d => d.in_deg > 0 && d.out_deg > 0);
 
     const x = d3.scaleLog().domain([1, d3.max(validNodes, d => d.in_deg) || 10]).range([0, width]);
-    const y = d3.scaleLog().domain([1, d3.max(validNodes, d => d.out_deg) || 10]).range([height, 0]);
+    const y = d3.scaleLinear().domain([1, d3.max(validNodes, d => d.out_deg) || 10]).range([height, 0]);
 
-    setupBaseAxes(svg, x, y, height, width, "In-Degree (k_in)", "Out-Degree (k_out)");
+    const commonTicks = [1, 2, 3, 5, 10, 20, 30, 50, 100, 150, 200];
+
+    const xAxis = d3.axisBottom(x)
+        .tickValues(commonTicks.filter(t => t <= x.domain()[1]))
+        .tickFormat(d3.format(",d"));
+
+    const yAxis = d3.axisLeft(y)
+        .tickValues(commonTicks.filter(t => t <= y.domain()[1]))
+        .tickFormat(d3.format(",d"));
+
+    svg.append("g")
+        .attr("transform", `translate(0,${height})`)
+        .call(xAxis)
+        .style("color", "#797b93")
+        .selectAll("text")
+        .style("fill", "#797b93")
+        .style("font-size", "9px");
+
+    svg.append("g")
+        .call(yAxis)
+        .style("color", "#797b93")
+        .selectAll("text")
+        .style("fill", "#797b93")
+        .style("font-size", "9px");
+
     svg.selectAll("circle").data(validNodes).enter().append("circle")
-        .attr("cx", d => x(d.in_deg)).attr("cy", d => y(d.out_deg)).attr("r", 2).style("fill", "#00f2fe")
-        .style("opacity", 0.4);
-    createLegend(svg, [{text: "Node Structure", color: "#00f2fe", type: "dot"}], width);
+        .attr("cx", d => x(d.in_deg) + (Math.random() - 0.5) * 3)
+        .attr("cy", d => y(d.out_deg) + (Math.random() - 0.5) * 3)
+        .attr("r", 1.8) // Leggermente più piccolo per un effetto ancora più "density-map"
+        .style("fill", "#00f2fe")
+        .style("opacity", 0.25);
+
+    svg.append("text")
+        .attr("x", width / 2).attr("y", height + 28).attr("text-anchor", "middle")
+        .style("fill", "#797b93").style("font-size", "10px").text("In-Degree (k_in)");
+
+    svg.append("text")
+        .attr("transform", "rotate(-90)").attr("x", -height / 2).attr("y", -30).attr("text-anchor", "middle")
+        .style("fill", "#797b93").style("font-size", "10px").text("Out-Degree (k_out)");
+
+    createLegend(svg, [{text: "Paper Distribution", color: "#00f2fe", type: "dot"}], width);
 }
 
 /**
@@ -525,21 +573,25 @@ export function drawErdosOutCCDF(selector, lambda, color) {
     setupBaseAxes(svg, x, y, height, width, "Out-Degree (k)", "P(K ≥ k)");
     svg.append("path").datum(erdosPoints).attr("fill", "none").attr("stroke", color).attr("stroke-dasharray", "4,4")
         .attr("stroke-width", 2).attr("d", d3.line().x(d => x(d.k)).y(d => y(d.p)));
-    createLegend(svg, [{text: "ER Theoretical Out-CCDF", color: color, type: "line", dash: "4,4"}], width);
+    createLegend(svg, [{text: "ER Theoretical Out-CCDF", color: color, type: "line", dash: "4,4"}], width-20);
 }
 
 /**
- * Draws a visually readable mixing matrix visualization inside a specified container.
- * The method renders a heatmap-style matrix with color encoding based on the provided data.
+ * Draws a readable mixing matrix heatmap within a specified container using D3.js.
+ * The heatmap includes labeled cells, axes, and a color bar legend to visualize the data.
  *
- * @param {string} selector - A selector string identifying the container where the visualization should be drawn.
- * @param {number[][]} matrix - A 2D array representing the mixing matrix data. It should be a square matrix where each
- * value ranges from 0 to 1.
- * @return {void} Does not return a value, as the visualization is rendered directly in the specified container.
+ * @param {string} selector - A CSS selector string identifying the container for the SVG element.
+ * @param {Object} data - The dataset required to render the mixing matrix.
+ * @param {Array<Array<number>>} data.mixing_matrix - A 2D array representing the mixing matrix values.
+ * @param {Array<string>} data.fields - An array of field names corresponding to the rows and columns of the mixing
+ * matrix.
+ *
+ * @return {void} This function does not return any value.
  */
-export function drawReadableMixingMatrix(selector, matrix) {
+export function drawReadableMixingMatrix(selector, data) {
     const container = d3.select(selector);
-    if (!matrix || matrix.length === 0) return;
+    if (!data.mixing_matrix || data.mixing_matrix.length === 0) return;
+    if (!data.fields || data.fields.length === 0) return;
 
     // Increased right margin from 40 to 60 to prevent colorbar numbers from being clipped
     const w = container.node().getBoundingClientRect().width - 10,
@@ -551,19 +603,22 @@ export function drawReadableMixingMatrix(selector, matrix) {
     const svg = container.append("svg").attr("width", w).attr("height", h).append("g").attr("transform",
         `translate(${margin.left},${margin.top})`);
 
-    const nRows = matrix.length;
+    const nRows = data.mixing_matrix.length;
 
     const x = d3.scaleBand().domain(d3.range(nRows)).range([0, width]).padding(0.05);
     const y = d3.scaleBand().domain(d3.range(nRows)).range([height, 0]).padding(0.05);
 
     // Find the true maximum value inside the matrix to enhance visual contrast
-    const maxVal = d3.max(matrix, row => d3.max(row)) || 1.0;
+    const maxVal = d3.max(data.mixing_matrix, row => d3.max(row)) || 1.0;
     const colorScale = d3.scaleSequential(d3.interpolateViridis).domain([0, maxVal]);
+
+    const originalFields = data.fields;
+    const shortFields = createShortenedFieldList(originalFields);
 
     // X-Axis Layout
     svg.append("g")
         .attr("transform", `translate(0,${height})`)
-        .call(d3.axisBottom(x).tickFormat(i => `C${i}`)) // Shortened to C0, C1 for narrow cards
+        .call(d3.axisBottom(x).tickFormat(i => `${shortFields[i]}`))
         .style("color", "#797b93")
         .selectAll("text")
         .style("fill", "#797b93")
@@ -571,7 +626,7 @@ export function drawReadableMixingMatrix(selector, matrix) {
 
     // Y-Axis Layout
     svg.append("g")
-        .call(d3.axisLeft(y).tickFormat(i => `C${i}`))
+        .call(d3.axisLeft(y).tickFormat(i => `${shortFields[i]}`))
         .style("color", "#797b93")
         .selectAll("text")
         .style("fill", "#797b93")
@@ -580,7 +635,7 @@ export function drawReadableMixingMatrix(selector, matrix) {
     // Draw Heatmap Cells and Labels
     for (let r = 0; r < nRows; r++) {
         for (let c = 0; c < nRows; c++) {
-            const val = matrix[r][c];
+            const val = data.mixing_matrix[r][c];
 
             // Append the rectangle cell
             svg.append("rect")
@@ -635,15 +690,44 @@ export function drawReadableMixingMatrix(selector, matrix) {
 }
 
 /**
- * Renders a bar chart visualization of categorical assortativity using D3.js.
+ * Cuts field list names to the desired length for the mixing matrix
+ * @param fieldList - list of the fieldset names
+ * @returns {*|*[]} - list of the fieldset names with the desired length
+ */
+export function createShortenedFieldList(fieldList) {
+    if (!fieldList || !Array.isArray(fieldList))
+        return [];
+
+    return fieldList.map(name => {
+        if (typeof name !== 'string') return name;
+        if (name.includes('_')) {
+            const parts = name.split('_');
+
+            let beforeUnderscore = parts[0];
+            if (beforeUnderscore.length > 5)
+                beforeUnderscore = beforeUnderscore.substring(0, 5);
+
+            const afterUnderscore = parts[1].substring(0, 2);
+
+            return `${beforeUnderscore}_${afterUnderscore}`;
+        }
+
+        return name.length > 5 ? name.substring(0, 5) : name;
+    });
+}
+
+/**
+ * Draws a bar chart representing categorical assortativity values for different network models.
  *
- * @param {string} selector - A CSS selector string that specifies the DOM element to render the visualization into.
- * @param {Object} networkData - The input data object, which contains the assortativity value and other related
- * information.
- * @param {number} [networkData.assortativity] - The observed assortativity value used for plotting. Defaults to -0.062
+ * @param {string} selector - A CSS selector string to target the container element where the chart will be rendered.
+ * @param {Object} networkData - An object containing assortativity values for different network models.
+ * @param {number} networkData.assortativity_erdos - Assortativity value for the Erdős-Rényi model. Defaults to 0.0 if
+ * not provided.
+ * @param {number} networkData.assortativity_config - Assortativity value for the Configuration Model. Defaults to 0.0
  * if not provided.
- * @return {void} Does not return a value; modifies the DOM by appending an SVG-based bar chart to the
- * specified container.
+ * @param {number} networkData.assortativity - Assortativity value for the observed Cora network. Defaults to 0.0 if
+ * not provided.
+ * @return {void} This function does not return anything. It renders the chart directly inside the specified container.
  */
 export function drawCategoricalAssortativity(selector, networkData) {
     const container = d3.select(selector);
@@ -654,22 +738,32 @@ export function drawCategoricalAssortativity(selector, networkData) {
     const svg = container.append("svg").attr("width", w).attr("height", h).append("g").attr("transform",
         `translate(${margin.left},${margin.top})`);
 
-    const rVal = networkData.assortativity || 0.0;
-    const categories = ["Within-Class Links", "Random Baseline (r=0)", "Observed Rig"];
-    const values = [networkData.mixing_within_fraction || 0, networkData.mixing_random_baseline || 0, rVal];
+    const categories = ["Erdős-Rényi (r)", "Configuration Model (r)", "Observed Cora (r)"];
+
+    const values = [
+        networkData.assortativity_erdos || 0.0,
+        networkData.assortativity_config || 0.0,
+        networkData.assortativity || 0.0
+    ];
 
     const x = d3.scaleBand().domain(categories).range([0, width]).padding(0.4);
-    const y = d3.scaleLinear().domain([-0.2, 1.0]).range([height, 0]);
+    const y = d3.scaleLinear().domain([-0.5, 1.0]).range([height, 0]);
 
     svg.append("g").attr("transform", `translate(0,${y(0)})`).call(d3.axisBottom(x)).style("color", "#797b93")
         .selectAll("text")
         .attr("transform", "translate(0,6)").style("fill", "#797b93").style("font-size", "8px");
+
     svg.append("g").call(d3.axisLeft(y).ticks(5)).style("color", "#797b93").selectAll("text").style("fill", "#797b93");
 
     svg.selectAll("rect").data(values).enter().append("rect")
         .attr("x", (d, i) => x(categories[i])).attr("y", d => d >= 0 ? y(d) : y(0))
         .attr("width", x.bandwidth()).attr("height", d => Math.abs(y(d) - y(0)))
-        .style("fill", (d, i) => i === 2 ? "#ff3d71" : "#3b3d56").attr("rx", 2);
+        .style("fill", (d, i) => {
+            if (i === 0) return "#00ff87";
+            if (i === 1) return "#00f2fe";
+            return "#ff4da6";
+        })
+        .attr("rx", 2);
 }
 
 /**
@@ -705,7 +799,7 @@ export function drawCrossVsExpected(selector, networkData) {
     svg.selectAll("rect").data(chartData).enter().append("rect")
         .attr("x", d => x(d.label)).attr("y", d => y(d.value)).attr("width", x.bandwidth())
         .attr("height", d => height - y(d.value))
-        .style("fill", (d, i) => i === 0 ? "#ff4da6" : "#2d3142").style("stroke", "#ff4da6")
+        .style("fill", (d, i) => i === 0 ? "#00f2fe" : "#ff4da6")
         .style("stroke-width", (d, i) => i === 1 ? 1.5 : 0).attr("rx", 3);
 }
 
@@ -733,8 +827,11 @@ export function drawTripleCCDF(selector, networkData) {
         `translate(${margin.left},${margin.top})`);
 
     // Ensure strict log-scale filtering across all models (p must be strictly positive)
-    const ccdfReal = (networkData.ccdf_in || []).map((p, k) => ({k, p}))
-        .filter(d => d.k > 0 && d.p > 0);
+    const rawReal = networkData.ccdf_in || {};
+    const ccdfReal = Object.keys(rawReal).map(degree => ({
+        k: parseInt(degree),
+        p: rawReal[degree]
+    })).filter(d => d.k > 0 && d.p > 0);
     const ccdfErdos = (networkData.ccdf_er || []).map((p, k) => ({k, p}))
         .filter(d => d.k > 0 && d.p > 0);
     const ccdfConfig = (networkData.ccdf_config || []).map((p, k) => ({k, p}))
