@@ -416,16 +416,7 @@ export function updateGraphLayout(viewName) {
     });
 
     // Resetting positions in the beginning
-    if (DOM.canvas) {
-        const startScale = 0.68;
-
-        const centeredTransform = d3.zoomIdentity
-            .translate(width * (1 - startScale) / 2, height * (1 - startScale) / 2)
-            .scale(startScale);
-
-        transformState.current = centeredTransform;
-        d3.select(DOM.canvas).property("__zoom", centeredTransform);
-    }
+    resetGraphZoom()
 
     if (viewName === 'Main Visualization' || viewName.includes('SIR')) {
         if (appState.mainViewLayoutMode === 'force' || viewName.includes('SIR')) {
@@ -587,4 +578,29 @@ export function updateGraphLayout(viewName) {
                 .min(Math.sqrt(d.in_deg || 1) * 1.3 + 2.5, 18) + 2).iterations(2));
     }
     DOM.simulation.alpha(1).restart();
+}
+
+/**
+ * Resets the graph zoom to its initial state by centering and scaling it to a predefined starting scale.
+ *
+ * @return {void} This method does not return a value.
+ */
+export function resetGraphZoom() {
+    if (!DOM.canvas || !DOM.graphWorkspace) return;
+
+    const width = DOM.graphWorkspace.clientWidth;
+    const height = DOM.graphWorkspace.clientHeight;
+    const startScale = 0.68;
+
+    const centeredTransform = d3.zoomIdentity
+        .translate(width * (1 - startScale) / 2, height * (1 - startScale) / 2)
+        .scale(startScale);
+
+    transformState.current = centeredTransform;
+
+    d3.select(DOM.canvas)
+        .property("__zoom", centeredTransform);
+
+    if (appState.globalNetworkData)
+        renderScene(appState.globalNetworkData.nodes, appState.globalNetworkData.links);
 }

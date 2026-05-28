@@ -44,10 +44,10 @@ export function renderAnalyticsDashboards(viewName) {
     if (viewName === 'In-Degree Structural Analysis') {
         // Configuring the window titles
         configureCardHeader(cards[0], "In-Degree PMF (Log-Log)",
-            "Resolution for Scale-Free Distribution");
-        configureCardHeader(cards[1], "In-Degree CCDF Tail (Log-Log)", "Empirical Cumulative Heavy-Tail Density");
+            "Empirical probability mass function");
+        configureCardHeader(cards[1], "In-Degree CCDF Tail (Log-Log)", "Heavy-Tail CCDF");
         configureCardHeader(cards[2], "Empirical Cora vs Erdos-Renyi G(n,p) (Log-Log)",
-            "Poisson Model Divergence & Percentile Bounds");
+            "E-R & Percentile Bounds");
         configureCardHeader(cards[3], "Top 10 Highest In-Degree Hubs", "Horizontal Ranking Analysis");
 
         // Adding the actual content to the windows
@@ -62,13 +62,13 @@ export function renderAnalyticsDashboards(viewName) {
 
     } else if (viewName === 'Out-Degree Structural Analysis') {
         // Configuring the window titles
-        configureCardHeader(cards[0], "Out-Degree PMF", "Discrete Symmetrical Target Metric");
-        configureCardHeader(cards[1], "Out-Degree CCDF (Range: 0-30 - Linear)",
-            "Light-Tail Structural Compaction");
-        configureCardHeader(cards[2], "Joint Degree Scatterplot",
-            "In-Degree vs Out-Degree Correlation Profiles");
+        configureCardHeader(cards[0], "Out-Degree PMF", "Finite Out-Degree Histogram");
+        configureCardHeader(cards[1], "Out-Degree CCDF (Log-Log)",
+            "Bounded Light-Tail Distribution");
+        configureCardHeader(cards[2], "Joint degree scatterplot",
+            "In-Degree vs Out-Degree correlation profiles");
         configureCardHeader(cards[3], "In-Degree CCDF Tail (Log-Log)",
-            "Theoretical Poisson Edge Limits");
+            "Empirical Cumulative Heavy-Tail Density");
 
         // Adding the actual content to the windows
         setTimeout(() => {
@@ -81,9 +81,9 @@ export function renderAnalyticsDashboards(viewName) {
     } else if (viewName === 'Homophily & Mixing Matrix') {
         // Configuring the window titles
         configureCardHeader(cards[0], "Mixing Matrix Probabilities",
-            "Categorical Link Transition Density");
+            "Categorical Assortativity Matrix");
         configureCardHeader(cards[1], "Observed Cross-Group Edges vs Null Model (2pq)",
-            "Homophily Boundary Check")
+            "Network Homophily Verification")
         configureCardHeader(cards[2], "", "", true);
         configureCardHeader(cards[3], "", "", true);
 
@@ -96,13 +96,13 @@ export function renderAnalyticsDashboards(viewName) {
     } else if (viewName === 'Benchmark Models Alignment') {
         // Configuring the window titles
         configureCardHeader(cards[0], "CCDF Comparison (Log-Log)",
-            "Cora vs Erdos-Renyi vs Configuration Model");
+            "Null Models Benchmark");
         configureCardHeader(cards[1], "Average Clustering Coefficient Metrics",
-            "Local Dense Triad Cohesion Spectrum");
+            "Local Triadic Closure Profile");
         configureCardHeader(cards[2], "Network Transitivity Metrics",
-            "Global Fractional Closed Triangles");
+            "Global Transitivity Benchmark");
         configureCardHeader(cards[3], "Global Reciprocity Metrics",
-            "Directed Mutuality Coefficient Benchmarks");
+            "Link Reciprocity Coefficient");
 
         // Adding the actual content to the windows
         setTimeout(() => {

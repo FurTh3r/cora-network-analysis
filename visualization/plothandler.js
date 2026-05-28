@@ -461,8 +461,8 @@ export function drawJointDegreeScatter(selector, nodes) {
 
     const validNodes = nodes.filter(d => d.in_deg > 0 && d.out_deg > 0);
 
-    const x = d3.scaleLog().domain([1, d3.max(validNodes, d => d.in_deg) || 10]).range([0, width]);
-    const y = d3.scaleLinear().domain([1, d3.max(validNodes, d => d.out_deg) || 10]).range([height, 0]);
+    const x = d3.scaleLog().domain([0.5, d3.max(validNodes, d => d.in_deg) || 10]).range([0, width]);
+    const y = d3.scaleLinear().domain([0, d3.max(validNodes, d => d.out_deg) || 10]).range([height, 0]);
 
     const commonTicks = [1, 2, 3, 5, 10, 20, 30, 50, 100, 150, 200];
 
@@ -489,12 +489,18 @@ export function drawJointDegreeScatter(selector, nodes) {
         .style("fill", "#797b93")
         .style("font-size", "9px");
 
-    svg.selectAll("circle").data(validNodes).enter().append("circle")
-        .attr("cx", d => x(d.in_deg) + (Math.random() - 0.5) * 3)
-        .attr("cy", d => y(d.out_deg) + (Math.random() - 0.5) * 3)
-        .attr("r", 1.8)
+    const randomJitter = d3.randomNormal(0, 1.8); // Jitter to make visualization opacity better...
+
+    svg.selectAll("circle")
+        .data(validNodes)
+        .enter()
+        .append("circle")
+        .attr("cx", d => x(d.in_deg))
+        .attr("cy", d => y(d.out_deg) + randomJitter())
+        .attr("r", 2.0)
         .style("fill", "#00f2fe")
-        .style("opacity", 0.25);
+        .style("opacity", 0.15)
+        .style("mix-blend-mode", "screen");
 
     svg.append("text")
         .attr("x", width / 2).attr("y", height + 28).attr("text-anchor", "middle")

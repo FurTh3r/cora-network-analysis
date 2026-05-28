@@ -73,7 +73,6 @@ window.switchViewEngine = function (engineType, viewDisplayName, menuElement) {
 
     if (engineType === 'GRAPH') {
         appState.activeView = viewDisplayName;
-        updateGraphLayout(viewDisplayName);
         updateSidebarMetrics(appState.globalNetworkData);
 
         DOM.analyticsWorkspace.style.display = 'none';
@@ -97,6 +96,8 @@ window.switchViewEngine = function (engineType, viewDisplayName, menuElement) {
             DOM.panelContextTitle.innerText = "Connectivity Components";
         else
             DOM.panelContextTitle.innerText = "Global Network Metrics";
+
+        updateGraphLayout(viewDisplayName);
 
     } else if (engineType === 'ANALYTICS') {
         appState.activeView = viewDisplayName;
