@@ -112,7 +112,7 @@ export function renderAnalyticsDashboards(viewName) {
                 {model: "Empirical Cora", val: data.benchmark_metrics.cora_clustering || "N/A", color: "#00ff87"},
                 {model: "Erdos G(n,p)", val: data.benchmark_metrics.erdos_clustering || "N/A", color: "#00f2fe"},
                 {model: "Config. Model", val: data.benchmark_metrics.config_clustering || "N/A", color: "#ff4da6"}
-            ], "Clustering Coeff.");
+            ], "Clustering Coefficient");
 
             drawBenchmarkBarChart("#canvas2", [
                 {model: "Empirical Cora", val: data.benchmark_metrics.cora_transitivity || "N/A", color: "#00ff87"},

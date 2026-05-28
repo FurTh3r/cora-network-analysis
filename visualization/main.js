@@ -286,7 +286,7 @@ function updateSidebarMetrics(metrics) {
             </div>
             <div class="metric-row" title="A measure of the degree to which nodes in a graph tend to cluster together, 
                 forming tight citation triangles.">
-                <span class="metric-label">Avg Clustering Coeff.:</span>
+                <span class="metric-label">Avg Clustering Coefficient:</span>
                 <span class="metric-value">${metrics.benchmark_metrics.cora_clustering ? metrics.benchmark_metrics
             .cora_clustering.toFixed(4) : '0'}</span>
             </div>
