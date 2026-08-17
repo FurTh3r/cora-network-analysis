@@ -1,129 +1,117 @@
-# Network Science Analysis & Interactive Visualization
+# Cora Citation Network Analysis
 
-## Cora Citation Network
+A network-science study of the Cora citation dataset, combining a reproducible Jupyter analysis with an interactive D3.js and HTML5 Canvas dashboard.
 
-An advanced **Network Science and Graph Analytics platform** for the structural, categorical, and dynamic study of the **Cora citation network**. The project integrates rigorous statistical analysis with topological null models and a high-performance interactive dashboard built using **D3.js** and **HTML5 Canvas**.
+The project investigates degree structure, centrality, categorical mixing, communities, connectivity, weak ties, and information diffusion across a directed academic citation network.
 
----
+## Research Questions
 
-![License](https://img.shields.io/badge/license-MIT-blue.svg)
-![D3.js](https://img.shields.io/badge/D3.js-v7-orange.svg)
-![Python](https://img.shields.io/badge/Python-3.10%2B-blue.svg)
+The notebook is organized around five questions:
 
----
+1. Is academic influence broadly distributed or concentrated among a small set of papers?
+2. How do high-impact papers and literature surveys differ structurally?
+3. Do research topics form isolated citation silos?
+4. Which connections allow information to cross community boundaries?
+5. How does a simulated innovation diffuse through the network?
 
-## Key Features
+## Analysis
 
-### 1. Advanced Topology & Degree Distribution Analysis
+The Python notebook includes:
 
-* Heavy-tail characterization using PMF and CCDF on log-log scales.
-* Benchmarking against null models:
+- directed graph construction from cora.cites and cora.content;
+- in-degree and out-degree distributions, PMF, and CCDF analysis;
+- PageRank and HITS centrality;
+- Erdős–Rényi and configuration-model comparisons;
+- categorical assortativity and mixing matrices;
+- strongly and weakly connected components;
+- reciprocity, path length, and clustering;
+- Louvain community detection;
+- betweenness and neighborhood-overlap analysis;
+- SIR diffusion experiments;
+- export of dashboard-ready JSON data.
 
-  * Erdős–Rényi ( G(N,p) )
-  * Configuration Model
-* Joint degree analysis (k_{in}) vs (k_{out}) with Gaussian jittering and alpha blending.
+## Interactive Dashboard
 
----
+The browser visualization provides:
 
-### 2. Homophily & Categorical Mixing
+- force-directed, radial, and hierarchical layouts;
+- zooming, panning, dragging, search, and hover details;
+- Louvain community, HITS, weak-tie, and component views;
+- SIR diffusion playback;
+- statistical dashboards for degree distributions, homophily, and benchmark models.
 
-* Categorical assortativity matrix for citation behavior across disciplines.
-* Homophily statistical testing against randomized baseline (2pq).
+D3.js v7 is loaded from its public CDN, while the graph itself is rendered on HTML5 Canvas for responsiveness.
 
----
+## Requirements
 
-### 3. High-Performance Interactive Visualization
+- Python 3;
+- Jupyter Notebook or JupyterLab;
+- the dependencies listed in requirements.txt;
+- a modern browser;
+- an internet connection when loading D3.js from the CDN.
 
-* Hybrid D3.js + Canvas rendering engine.
-* Velocity-Verlet physics-based layout simulation.
-* Advanced interaction system:
+Install the Python environment with:
 
-  * Zoom and pan
-  * Node dragging
-  * Multi-touch event handling
-* Visual encoding:
+    python3 -m venv .venv
+    source .venv/bin/activate
+    pip install -r requirements.txt
+    pip install jupyter
 
-  * Node size ∝ In-Degree
-  * Node color ∝ community assignment
+The requirements file currently contains sns, which is not the package imported by the notebook. If installation fails on that entry, remove it; seaborn is already listed separately.
 
----
+## Running the Analysis
 
-### 4. Dynamic Simulations (SIR Model)
+Start Jupyter from the repository root:
 
-* Susceptible–Infected–Recovered model for information diffusion.
-* Comparison between hub-based and random seed strategies.
-* Study of diffusion constraints in modular networks.
+    jupyter notebook labnotebook.ipynb
 
----
+Run the cells in order. The notebook reads the files under data/ and generates the JSON payload used by the web dashboard.
 
-## Dashboard Overview
+## Running the Dashboard
 
-1. In-Degree Distribution (heavy-tail, top 99th percentile hubs)
-2. Out-Degree Distribution (bounded bibliographic structure)
-3. Categorical assortativity analysis
-4. Clustering and triadic closure validation
+The dashboard expects cora_visualization_data.json in the repository root. Generate that file through the notebook before starting the server.
 
----
+Serve the repository root:
 
-## Technology Stack
+    python3 -m http.server 8000
 
-* Backend: Python (NetworkX, NumPy, SciPy, Pandas)
-* Frontend: D3.js v7, HTML5 Canvas
-* UI: TailwindCSS / Cyberpunk Dark Theme
+Then open:
 
----
+    http://localhost:8000/visualization/
 
-## Installation & Usage
+Opening visualization/index.html directly from the filesystem will not work reliably because the dashboard fetches JSON and uses JavaScript modules.
 
-### Data preprocessing (optional)
+## Dataset
 
-```bash
-pip install networkx numpy pandas scipy
-python preprocess_cora.py
-```
+The bundled Cora dataset contains scientific publications, their subject classes, and directed citation relationships:
 
-### Launch local server
+- data/cora.content — paper identifiers, binary word attributes, and class labels;
+- data/cora.cites — citation edges;
+- data/README — original dataset notes.
 
-Python:
+## Repository Structure
 
-```bash
-python -m http.server 8000
-```
+    .
+    ├── data/
+    │   ├── cora.cites
+    │   ├── cora.content
+    │   └── README
+    ├── images/
+    ├── visualization/
+    │   ├── index.html
+    │   ├── main.js
+    │   ├── graph_view.js
+    │   ├── analytics_view.js
+    │   ├── state.js
+    │   ├── plothandler.js
+    │   └── style.css
+    ├── labnotebook.ipynb
+    └── requirements.txt
 
-Node.js:
+## Author
 
-```bash
-npm install -g local-server
-local-server
-```
-
-Open in browser:
-
-```
-http://localhost:8000
-```
-
----
-
-## Scientific Results
-
-* Strong structural asymmetry between In-Degree and Out-Degree:
-
-  * Out-Degree: bounded by citation conventions
-  * In-Degree: emergent scale-free preferential attachment
-
-* High modularity:
-  [
-  Q = 0.8147
-  ]
-
-### SIR Diffusion Dynamics
-
-* Hub nodes accelerate early-stage diffusion
-* Community structure strongly limits global propagation
-
----
+**Lorenzo Pasini** — [FurTh3r](https://github.com/FurTh3r)
 
 ## License
 
-MIT License
+No license file is currently included in this repository. Unless otherwise stated by the author, all rights are reserved.
