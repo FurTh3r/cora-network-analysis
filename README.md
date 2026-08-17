@@ -12,7 +12,7 @@ An advanced **Network Science and Graph Analytics platform** for the structural,
 
 ---
 
-## 🚀 Key Features
+## Key Features
 
 ### 1. Advanced Topology & Degree Distribution Analysis
 
@@ -56,7 +56,7 @@ An advanced **Network Science and Graph Analytics platform** for the structural,
 
 ---
 
-## 📊 Dashboard Overview
+## Dashboard Overview
 
 1. In-Degree Distribution (heavy-tail, top 99th percentile hubs)
 2. Out-Degree Distribution (bounded bibliographic structure)
@@ -65,7 +65,7 @@ An advanced **Network Science and Graph Analytics platform** for the structural,
 
 ---
 
-## 🛠️ Technology Stack
+## Technology Stack
 
 * Backend: Python (NetworkX, NumPy, SciPy, Pandas)
 * Frontend: D3.js v7, HTML5 Canvas
@@ -73,7 +73,7 @@ An advanced **Network Science and Graph Analytics platform** for the structural,
 
 ---
 
-## 💻 Installation & Usage
+## Installation & Usage
 
 ### Data preprocessing (optional)
 
@@ -105,7 +105,7 @@ http://localhost:8000
 
 ---
 
-## 🔬 Scientific Results
+## Scientific Results
 
 * Strong structural asymmetry between In-Degree and Out-Degree:
 
@@ -124,6 +124,6 @@ http://localhost:8000
 
 ---
 
-## 📄 License
+## License
 
 MIT License
